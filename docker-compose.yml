@@ -31,7 +31,7 @@ services:
     build:
       context: ./backend/auth_service
       dockerfile: Dockerfile
-    command: bash -c "/app/start.sh"
+    command: sh /app/start.sh
     env_file:
       - .env
     restart: unless-stopped
@@ -64,10 +64,7 @@ services:
     build:
       context: ./backend/tournament-service
       dockerfile: Dockerfile
-    command: >
-      bash -c "python manage.py makemigrations &&
-               python manage.py migrate &&
-               gunicorn tournament.wsgi:application --bind 0.0.0.0:8003 --workers=3"
+    command: sh /app/start.sh
     env_file:
       - .env
     restart: unless-stopped
@@ -97,10 +94,7 @@ services:
     build:
       context: ./backend/history
       dockerfile: Dockerfile
-    command: >
-      bash -c "python manage.py makemigrations &&
-               python manage.py migrate &&
-               gunicorn history_service.wsgi:application --bind 0.0.0.0:8002 --workers=3"
+    command: sh /app/start.sh
     env_file:
       - .env
     restart: unless-stopped
@@ -132,12 +126,9 @@ services:
     networks:
       - internal
 
-
-
 networks:
   internal:
     driver: bridge
-
 
 volumes:
   proxy_logs:
