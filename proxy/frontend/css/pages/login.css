@@ -1,0 +1,80 @@
+.container.py-4 {
+  width: 100%;
+  padding: 2rem;
+}
+
+section.text-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+section.text-lg-start {
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 0;
+}
+
+#login-form button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 13px;
+  padding: 10px 20px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#login-form button:hover {
+  background-color: var(--hover-color);
+  color: var(--bg-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#login-form .btn-floating {
+  padding: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#login-form input {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+}
+
+#login-form .form-control:focus {
+  border-color: var(--hover-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+#login-form .form-control {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+#login-form label {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 13px;
+}
+
+#oauth-42 img {
+  filter: var(--logo-filter);
+  transition: filter 0.3s ease;
+}
+
+#oauth-42:hover img {
+  filter: var(--logo-filter) brightness(0.8);
+  filter: var(--logo-filter) invert(1);
+}

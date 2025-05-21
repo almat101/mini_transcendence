@@ -1,0 +1,4 @@
+api.http.host: 0.0.0.0
+node.name: ${NODE_NAME}
+pipeline.buffer.type: heap
+xpack.monitoring.enabled: ${xpack.monitoring.enabled}

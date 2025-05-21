@@ -1,0 +1,34 @@
+# Kibana server settings
+
+# Set the host to listen on all interfaces
+server.host: "0.0.0.0"
+
+# Set the port for Kibana (default is 5601)
+server.port: 5601
+
+server.publicBaseUrl: "https://localhost/kibana"
+
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certs/kibana/kibana.crt
+server.ssl.key: /usr/share/kibana/config/certs/kibana/kibana.key
+
+
+# Use basePath if you want to access Kibana on a specific path like /kibana
+server.basePath: "/kibana"
+
+
+# Set the server's name (this is just for display)
+server.name: "kibana"
+
+# Set timeout and payload size for server requests
+server.keepaliveTimeout: 120000
+server.maxPayload: 1048576
+
+# Set any additional proxy or reverse proxy settings (if behind a reverse proxy)
+server.rewriteBasePath: true
+csp.strict: false
+csp.warnLegacyBrowsers: false
+csp.script_src:
+  - unsafe-inline
+  - self
+  - unsafe-eval

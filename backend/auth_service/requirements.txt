@@ -1,0 +1,17 @@
+django
+django-rest-framework
+psycopg2-binary
+django-oauth-toolkit
+djangorestframework_simplejwt
+django-cors-headers
+Pillow
+hvac #for hashicorp vault
+django-redis
+django-dotenv
+qrcode
+django-otp
+pyotp
+django-prometheus #prometheus monitoring
+django-watchman #health check status
+django-crontab
+gunicorn

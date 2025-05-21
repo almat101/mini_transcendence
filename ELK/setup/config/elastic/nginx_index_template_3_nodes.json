@@ -1,0 +1,34 @@
+{
+	"index_patterns": ["nginx-logs-*"],
+	"template": {
+	  "settings": {
+		"index": {
+		  "lifecycle": {
+			"name": "nginx_logs_policy",
+			"rollover_alias": "nginx-logs"
+		  },
+		  "number_of_shards": 3,
+		  "number_of_replicas": 1
+		}
+	  },
+	  "mappings": {
+		"properties": {
+		  "request": { "type": "text" },
+		  "response": { "type": "integer" },
+		  "bytes":    { "type": "long" },
+		  "clientip": { "type": "ip" },
+		  "timestamp":{ "type": "date" }
+		}
+	  },
+	  "aliases": {
+		"nginx-logs": {
+		  "is_write_index": true
+		}
+	  }
+	},
+	"priority": 500,
+	"version": 2,
+	"_meta": {
+	  "description": "Composable index template for nginx logs with rollover support"
+	}
+}

@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); /* Pixel art font */
+@import 'pages/pages.css';
+@import 'components/components.css';
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+@media (min-width: 992px) {
+  .navbar {
+      padding: 0.5rem 2rem;
+  }
+
+  .navbar-nav {
+      gap: 2rem;
+  }
+}
+
+@media (max-width: 991px) {
+  #settingsSection {
+    padding: 10px;
+    flex-direction: column;
+  }
+
+  .container.align-items-center {
+    padding: 0;
+  }
+}
+
+:root {
+  --bg-color: var(--bg-color);
+  --border-color: var(--bs-border-color);
+}
+
+.theme-icon-active {
+    color: var(--bs-body-color);
+    transition: color 0.3s ease;
+}
+
+[data-bs-theme="dark"] {
+  --hover-color: ghostwhite;
+  --text-color: ghostwhite;
+  --logo-filter: invert(1);
+  --bg-color: var(--bs-dark);
+}
+
+[data-bs-theme="light"] {
+  --hover-color: black;
+  --text-color: var(--bs-dark);
+  --logo-filter: invert(0);
+  --bg-color: ghostwhite;
+}
+
+[data-bs-theme="dark"] .navbar {
+    --bs-navbar-color: var(--bs-white);
+}
+
+/* Remove conflicting animation */
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.btn-link.nav-link {
+    color: var(--bs-body-color);
+}
+
+.btn-link.nav-link:hover {
+    color: var(--bs-primary);
+}
+
+.btn-link {
+  text-decoration: none !important;
+}
+
+.btn-link:hover {
+  text-decoration: none !important;
+}
+
+#not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+#not-found h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 48px;
+  animation: bounce 2s infinite ease-in-out;
+}
+
+#not-found p {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 24px;
+  animation: bounce 2s infinite ease-in-out 0.5s; /* 0.5s delay for staggered effect */
+}
+
+/* mentioned in the pong file */
+#pong-container{
+  text-align: center;
+  background-color: var(--bg-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+}
+
+.card {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+.card-body {
+  color: var(--text-color);
+}
+
+/* Apply the pixel art font to the navbar */
+
+h2 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 24px;
+}
+
+/*! Lnicoter style */
+
+#menu {
+  margin-bottom: 20px;
+}
+
+#scores {
+  margin-bottom: 20px;
+}
+
+#scores span {
+  font-size: 24px;
+  margin: 0 20px;
+  font-family: 'Press Start 2P', cursive; /* Use pixel art font */
+}
+
+canvas {
+  border: 2px solid black; /* Add this line to draw a border around the canvas */
+  background-color: black; /* Set the canvas background to black */
+}
+
+#winningScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#title {
+  font-family: 'Press Start 2P', cursive; /* Use pixel art font */
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+#pong-container button {
+  font-family: 'Press Start 2P', cursive; /* Use pixel art font */
+  font-size: 24px;
+  padding: 15px 30px;
+  background-color: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 10; /* only for 3d canvas i'm testing out*/
+  transition: background-color 0.3s, color 0.3s;
+  width: 400px; /* Set a fixed width */
+  text-align: center; /* Center the text */
+}
+
+/*
+The theory says that in order to make it work properly
+for the button created for the pong section+
+you don't need to specify the id of the button
+*BUT how it behaves in the div of the container that is in it
+!remember this if you need to integrate most of your frontend here
+*/
+#pong-container button:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+/* Styles for Tournament Setup */
+#matchAnnouncement,
+#matchWinner,
+#matchAnnouncement p,
+#matchWinner p,
+#matchAnnouncement h2,
+#matchWinner h2 {
+  font-family: 'Press Start 2P', cursive !important;
+}
+
+
+#gameCanvas3dContainer {
+  position: relative;
+}
+
+/* */
+
+#gameOver
+{
+  font-family: 'Press Start 2P', cursive; /* Use pixel art font */
+  font-size: 24px;
+  padding: 15px 30px;
+  background-color: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 10; /* only for 3d canvas i'm testing out*/
+  transition: background-color 0.3s, color 0.3s;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+#gameCanvas3dContainer
+{
+    text-align: center;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    position: fixed;
+    width: 100%;
+}
+
+#gameCanvas3dContainer button:hover
+{
+  background-color: #fff;
+  color: #000;
+}

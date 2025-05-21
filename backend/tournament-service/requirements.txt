@@ -1,0 +1,10 @@
+django
+djangorestframework #django rest framework
+markdown       # Markdown support for the browsable API.
+django-filter  # Filtering support
+psycopg2-binary  # postgres
+psycopg
+django-cors-headers # cors
+django-watchman
+django-prometheus
+gunicorn

@@ -1,0 +1,225 @@
+services:
+  proxy:
+    image: proxy
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    container_name: proxy
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      history-service:
+        condition: service_healthy
+      tournament-service:
+        condition: service_healthy
+    volumes:
+      - media:/app/media:rw
+      - proxy_logs:/var/log/nginx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -k https://localhost:443 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+  auth-service:
+    image: auth-service
+    container_name: auth-service
+    build:
+      context: ./backend/auth_service
+      dockerfile: Dockerfile
+    command: bash -c "/app/start.sh"
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - media:/app/media:rw
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+  auth_db:
+    image: postgres:15
+    container_name: auth_db
+    env_file: ".env"
+    environment:
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+     - POSTGRES_DB=${POSTGRES_AUTH_DB}
+     - POSTGRES_HOST=${POSTGRES_AUTH_HOST}
+    restart: always
+    volumes:
+      - postgres_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+
+  tournament-service:
+    image: tournament-service
+    container_name: tournament-service
+    build:
+      context: ./backend/tournament-service
+      dockerfile: Dockerfile
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn tournament.wsgi:application --bind 0.0.0.0:8003 --workers=3"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      tournament_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8003/watchman/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+  tournament_db:
+    image: postgres:15
+    container_name: tournament_db
+    env_file: ".env"
+    environment:
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+     - POSTGRES_DB=${POSTGRES_TOURNAMENT_DB}
+     - POSTGRES_HOST=${POSTGRES_TOURNAMENT_HOST}
+    restart: always
+    volumes:
+      - postgres_tournament:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  history-service:
+    image: history-service
+    container_name: history-service
+    build:
+      context: ./backend/history
+      dockerfile: Dockerfile
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn history_service.wsgi:application --bind 0.0.0.0:8002 --workers=3"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      history_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8002/watchman/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+  history_db:
+    image: postgres:15
+    container_name: history_db
+    env_file: ".env"
+    environment:
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+     - POSTGRES_DB=${POSTGRES_HISTORY_DB}
+     - POSTGRES_HOST=${POSTGRES_HISTORY_HOST}
+    restart: always
+    volumes:
+      - postgres_history:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  postgres-exporter-auth-db:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter-auth-db
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@auth_db:5432/auth_db?sslmode=disable"
+    restart: unless-stopped
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  postgres-exporter-tournament-db:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter-tournament-db
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tournament_db:5432/tournament_db?sslmode=disable"
+    restart: unless-stopped
+    command:
+      - '--web.listen-address=:9189'
+    depends_on:
+      tournament_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  postgres-exporter-history-db:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter-history-db
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@history_db:5432/history_db?sslmode=disable"
+    restart: unless-stopped
+    command:
+      - '--web.listen-address=:9190'
+    depends_on:
+      history_db:
+        condition: service_healthy
+    networks:
+      - internal
+        
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - internal
+
+
+
+networks:
+  internal:
+    driver: bridge
+
+
+volumes:
+  proxy_logs:
+  postgres_auth:
+  postgres_tournament:
+  postgres_history:
+  media:

@@ -1,0 +1,47 @@
+groups:
+  - name: postgres_alerts
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is unreachable."
+
+      - alert: HighPostgresConnections
+        expr: pg_stat_activity_count > 100  # Adjust threshold based on your DB load
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of PostgreSQL connections"
+          description: "PostgreSQL instance {{ $labels.instance }} has more than 100 active connections."
+
+      - alert: SlowQueries
+        expr: rate(pg_stat_activity_duration_sum[5m]) / rate(pg_stat_activity_count[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow queries detected in PostgreSQL"
+          description: "Queries on {{ $labels.instance }} are running slower than 5 seconds on average."
+
+      - alert: ReplicationLag
+        expr: pg_replication_lag > 100  # Set threshold for replication delay in seconds
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Replication lag detected"
+          description: "Replication lag on {{ $labels.instance }} exceeds 100 seconds."
+
+      - alert: LowDiskSpace
+        expr: (pg_database_size_bytes{datname="db1"} / 1024 / 1024 / 1024) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on PostgreSQL"
+          description: "Database {{ $labels.datname }} is using more than 90GB of disk space."
