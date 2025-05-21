@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     'localhost',
     'history-service',
     'ec2-51-20-85-225.eu-north-1.compute.amazonaws.com',
+    'transcendence.alematta.com'
 ]
 
 
@@ -80,6 +81,7 @@ CORS_ALLOW_CREDENTIALS = True # If you need to send cookies or authentication he
 CORS_ALLOWED_ORIGINS = [
     "https://localhost",
     "https://ec2-51-20-85-225.eu-north-1.compute.amazonaws.com",
+    "https://transcendence.alematta.com"
 ]
 
 
@@ -120,6 +122,7 @@ CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = [
     'https://localhost',
     'https://ec2-51-20-85-225.eu-north-1.compute.amazonaws.com',
+    'https://transcendence.alematta.com'
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

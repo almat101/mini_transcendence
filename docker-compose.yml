@@ -7,19 +7,17 @@ services:
     container_name: proxy
     restart: unless-stopped
     ports:
-      - "443:443"
+      - "80:80"
+#      - "443:443"
     depends_on:
-      auth-service:
-        condition: service_healthy
-      history-service:
-        condition: service_healthy
-      tournament-service:
-        condition: service_healthy
+      - auth-service
+      - history-service
+      - tournament-service
     volumes:
       - media:/app/media:rw
       - proxy_logs:/var/log/nginx
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -k https://localhost:443 || exit 1"]
+      test: ["CMD-SHELL", "curl -f -k http://localhost:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -40,19 +38,12 @@ services:
     volumes:
       - media:/app/media:rw
     depends_on:
-      auth_db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      - auth_db
     networks:
       - internal
 
   auth_db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: auth_db
     env_file: ".env"
     environment:
@@ -63,11 +54,6 @@ services:
     restart: always
     volumes:
       - postgres_auth:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - internal
 
@@ -86,19 +72,12 @@ services:
       - .env
     restart: unless-stopped
     depends_on:
-      tournament_db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8003/watchman/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      - tournament_db
     networks:
       - internal
 
   tournament_db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: tournament_db
     env_file: ".env"
     environment:
@@ -109,11 +88,6 @@ services:
     restart: always
     volumes:
       - postgres_tournament:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - internal
 
@@ -131,19 +105,12 @@ services:
       - .env
     restart: unless-stopped
     depends_on:
-      history_db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8002/watchman/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      - history_db
     networks:
       - internal
 
   history_db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: history_db
     env_file: ".env"
     environment:
@@ -154,54 +121,9 @@ services:
     restart: always
     volumes:
       - postgres_history:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - internal
-
-  postgres-exporter-auth-db:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    container_name: postgres-exporter-auth-db
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@auth_db:5432/auth_db?sslmode=disable"
-    restart: unless-stopped
-    depends_on:
-      auth_db:
-        condition: service_healthy
-    networks:
-      - internal
-
-  postgres-exporter-tournament-db:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    container_name: postgres-exporter-tournament-db
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tournament_db:5432/tournament_db?sslmode=disable"
-    restart: unless-stopped
-    command:
-      - '--web.listen-address=:9189'
-    depends_on:
-      tournament_db:
-        condition: service_healthy
-    networks:
-      - internal
-
-  postgres-exporter-history-db:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    container_name: postgres-exporter-history-db
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@history_db:5432/history_db?sslmode=disable"
-    restart: unless-stopped
-    command:
-      - '--web.listen-address=:9190'
-    depends_on:
-      history_db:
-        condition: service_healthy
-    networks:
-      - internal
-        
+  
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
