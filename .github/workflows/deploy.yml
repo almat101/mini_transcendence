@@ -23,7 +23,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd mini_transcendence/
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            sudo docker compose down
+            sudo docker compose up --build -d
           EOF
 
