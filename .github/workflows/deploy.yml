@@ -3,27 +3,90 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main  # Trigger workflow only on push to main branch
 
 jobs:
-  deploy:
+  ci:
+    name: Continuous Integration
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH
+      - name: Echo CI stage
+        run: echo "CI Stage: Code checkout complete."
+
+      - name: Build Docker images
+        run: |
+          echo "CI Stage: Starting Docker build..."
+          docker compose build
+          echo "CI Stage: Docker images built successfully."
+
+  cd:
+    name: Continuous Deployment
+    runs-on: ubuntu-latest
+    needs: ci  # Only run if the CI job succeeds
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Echo CD stage
+        run: echo "CD Stage: Preparing to deploy to EC2..."
+
+      - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
       - name: Deploy to EC2
         run: |
+          echo "CD Stage: Connecting to EC2 instance..."
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "CD Stage: Navigating to project directory..."
             cd mini_transcendence/
+
+            echo "CD Stage: Pulling latest code from Git..."
             git pull origin main
+
+            echo "CD Stage: Stopping running containers..."
             sudo docker compose down
+
+            echo "CD Stage: Building and restarting containers..."
             sudo docker compose up --build -d
+
+            echo "CD Stage: Deployment complete."
           EOF
 
+
+
+#name: CI/CD Pipeline
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up SSH
+#        uses: webfactory/ssh-agent@v0.5.4
+#        with:
+#          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+#
+#      - name: Deploy to EC2
+#        run: |
+#          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+#            cd mini_transcendence/
+#            git pull origin main
+#            sudo docker compose down
+#            sudo docker compose up --build -d
+#          EOF
+#
