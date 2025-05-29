@@ -17,11 +17,11 @@ jobs:
       - name: Echo CI stage
         run: echo "CI Stage Code checkout complete."
 
-      - name: Build Docker images
-        run: |
-          echo "CI Stage: Starting Docker build..."
-          docker compose build
-          echo "CI Stage Docker images built successfully."
+          #- name: Build Docker images
+          #run: |
+          #echo "CI Stage: Starting Docker build..."
+          #docker compose build
+          #echo "CI Stage Docker images built successfully."
 
   cd:
     name: Continuous Deployment
@@ -56,6 +56,15 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+
+      - name: Transfer .env file to EC2
+        run: |
+          # The source is .env (from the runner's current directory)
+          # The target is the full path on EC2: /home/admin/mini_transcendence/
+          scp -o StrictHostKeyChecking=no .env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/admin/mini_transcendence/
+
+
 
       - name: Deploy to EC2
         run: |
