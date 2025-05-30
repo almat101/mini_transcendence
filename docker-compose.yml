@@ -8,7 +8,6 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-#      - "443:443"
     depends_on:
       - auth-service
       - history-service
@@ -38,7 +37,8 @@ services:
     volumes:
       - media:/app/media:rw
     depends_on:
-      - auth_db
+      auth_db:
+        condition: service_healthy
     networks:
       - internal
 
@@ -46,14 +46,19 @@ services:
     image: postgres:15-alpine
     container_name: auth_db
     env_file: ".env"
-    environment:
-     - POSTGRES_USER=${POSTGRES_USER}
-     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-     - POSTGRES_DB=${POSTGRES_AUTH_DB}
-     - POSTGRES_HOST=${POSTGRES_AUTH_HOST}
+    # environment:
+    #  - POSTGRES_USER=${POSTGRES_USER}
+    #  - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #  - POSTGRES_DB=${POSTGRES_AUTH_DB}
+    #  - POSTGRES_HOST=${POSTGRES_AUTH_HOST}
     restart: always
     volumes:
       - postgres_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_AUTH_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - internal
 
@@ -69,7 +74,8 @@ services:
       - .env
     restart: unless-stopped
     depends_on:
-      - tournament_db
+      tournament_db:
+        condition: service_healthy
     networks:
       - internal
 
@@ -77,14 +83,19 @@ services:
     image: postgres:15-alpine
     container_name: tournament_db
     env_file: ".env"
-    environment:
-     - POSTGRES_USER=${POSTGRES_USER}
-     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-     - POSTGRES_DB=${POSTGRES_TOURNAMENT_DB}
-     - POSTGRES_HOST=${POSTGRES_TOURNAMENT_HOST}
+    # environment:
+    #  - POSTGRES_USER=${POSTGRES_USER}
+    #  - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #  - POSTGRES_DB=${POSTGRES_TOURNAMENT_DB}
+    #  - POSTGRES_HOST=${POSTGRES_TOURNAMENT_HOST}
     restart: always
     volumes:
       - postgres_tournament:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_TOURNAMENT_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - internal
 
@@ -99,7 +110,8 @@ services:
       - .env
     restart: unless-stopped
     depends_on:
-      - history_db
+      history_db:
+        condition: service_healthy
     networks:
       - internal
 
@@ -107,16 +119,22 @@ services:
     image: postgres:15-alpine
     container_name: history_db
     env_file: ".env"
-    environment:
-     - POSTGRES_USER=${POSTGRES_USER}
-     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-     - POSTGRES_DB=${POSTGRES_HISTORY_DB}
-     - POSTGRES_HOST=${POSTGRES_HISTORY_HOST}
+    # environment:
+    #  - POSTGRES_USER=${POSTGRES_USER}
+    #  - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #  - POSTGRES_DB=${POSTGRES_HISTORY_DB}
+    #  - POSTGRES_HOST=${POSTGRES_HISTORY_HOST}
     restart: always
     volumes:
       - postgres_history:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_HISTORY_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - internal
+
   
   cloudflared:
     image: cloudflare/cloudflared:latest
