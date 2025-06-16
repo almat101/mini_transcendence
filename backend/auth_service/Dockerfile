@@ -19,7 +19,6 @@ COPY django/ .
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-
 # RUN echo '#!/bin/sh\n\
 # python manage.py crontab remove\n\
 # python manage.py crontab add\n\

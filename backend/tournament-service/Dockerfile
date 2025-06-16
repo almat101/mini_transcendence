@@ -15,7 +15,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN chmod +x /app/start.sh
+#RUN chmod +x /app/start.sh
 
-# Expose the desired port
 EXPOSE 8003

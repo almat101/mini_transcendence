@@ -30,7 +30,7 @@ services:
     build:
       context: ./backend/auth_service
       dockerfile: Dockerfile
-    command: sh /app/start.sh
+    command: gunicorn auth_service.wsgi:application --bind 0.0.0.0:8001 --workers=1 --threads=4
     env_file:
       - .env
     restart: unless-stopped
@@ -56,9 +56,10 @@ services:
       - postgres_auth:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s    # Increased from 10s
+      timeout: 10s     # Increased from 5s
+      retries: 3       # Decreased from 5
+      start_period: 20s
     networks:
       - internal
 
@@ -69,7 +70,10 @@ services:
     build:
       context: ./backend/tournament-service
       dockerfile: Dockerfile
-    command: sh /app/start.sh
+    command: >
+      sh -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn tournament.wsgi:application --bind 0.0.0.0:8003 --workers=1 --threads=4"
     env_file:
       - .env
     restart: unless-stopped
@@ -93,9 +97,10 @@ services:
       - postgres_tournament:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     networks:
       - internal
 
@@ -105,7 +110,10 @@ services:
     build:
       context: ./backend/history
       dockerfile: Dockerfile
-    command: sh /app/start.sh
+    command: >
+      sh -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn history_service.wsgi:application --bind 0.0.0.0:8002 --workers=1 --threads=4"
     env_file:
       - .env
     restart: unless-stopped
@@ -129,12 +137,12 @@ services:
       - postgres_history:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     networks:
       - internal
-
   
   cloudflared:
     image: cloudflare/cloudflared:latest
