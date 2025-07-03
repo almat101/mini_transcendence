@@ -1,4 +1,4 @@
-# 🏓 mini_transcendence - Modern Pong Evolution 🚀 with github action for CI/CD
+# 🏓 mini_transcendence - Modern Pong Evolution 🚀 Enhanced with Ansible for Seamless Automation
 
 ## To ensure our microservices were light enough to run on an AWS Free Tier virtual machine, which hosts our pong spa site at [link](https://transcendence.alematta.com/) , I had to strip out the DevOps elements, including grafana/prometheus and ELK. I've set up a basic CI/CD pipeline with GitHub Actions. Now, any code changes will be automatically deployed to the main branch.
 
