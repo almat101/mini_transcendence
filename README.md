@@ -2,6 +2,10 @@
 
 ## To ensure our microservices were light enough to run on an AWS Free Tier virtual machine, which hosts our pong spa site at [link](https://transcendence.alematta.com/) , I had to strip out the DevOps elements, including grafana/prometheus and ELK. I've set up a basic CI/CD pipeline with GitHub Actions. Now, any code changes will be automatically deployed to the main branch.
 
+## 📚 Documentation
+
+- 🚀 [Ansible Deployment Guide](ansible.md) - Complete automation setup and deployment instructions
+
 A next-generation Pong experience with tournaments, AI opponents, and advanced web features, created as part of 42 School's curriculum.
 
 ## ✅ Implemented Features Checklist
