@@ -10,7 +10,7 @@
 - **External Services**: Cloudflare tunnel token, SMTP email provider credentials(GMAIL)
 - **Security Keys**: Django secret keys and JWT algorithms
 
-**Important**: This is a production-ready deployment automation. All environment variables in the [`/ansible/roles/app_config/.env.j2`](.env.j2) template must be properly configured for the application to function.
+**Important**: This is a production-ready deployment automation. All environment variables in the [`ansible/roles/app_config/templates/.env.j2`](ansible/roles/app_config/templates/.env.j2) template must be properly configured for the application to function.
 
 ### 🎯 What This Provides
 
