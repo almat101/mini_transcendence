@@ -1,4 +1,5 @@
 #custom files
+test.sh
 django_venv.sh
 matchmaking_django/
 #password file for alertmanager
