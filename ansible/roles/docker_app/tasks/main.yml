@@ -13,7 +13,6 @@
   ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
   become: yes
   become_user: "{{ app_owner_user }}"
-  notify: Restart Docker Compose Services # Notifica l'handler dopo aver fermato i servizi
 
 - name: Build Docker Compose services
   community.docker.docker_compose_v2:
@@ -21,7 +20,6 @@
     build: always # Forziamo la ricostruzione ogni volta per coerenza
   become: yes
   become_user: "{{ app_owner_user }}"
-  notify: Restart Docker Compose Services # Notifica l'handler dopo aver ricostruito
 
 - name: Start Docker Compose services
   community.docker.docker_compose_v2:
