@@ -8,7 +8,7 @@ RUN apk update && apk add --no-cache curl vim sudo net-tools
 #RUN mkdir -p /etc/nginx/ssl/
 
 # Copy Nginx configuration
-COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY conf/nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # Copy Nginx conf.d
 COPY conf.d/gateway.conf /etc/nginx/conf.d/
