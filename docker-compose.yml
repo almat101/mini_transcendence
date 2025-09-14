@@ -30,7 +30,7 @@ services:
     build:
       context: ./backend/auth_service
       dockerfile: Dockerfile
-    command: gunicorn auth_service.wsgi:application --bind 0.0.0.0:8001 --workers=1 --threads=4
+    command: sh /app/start.sh
     env_file:
       - .env
     restart: unless-stopped
@@ -43,7 +43,7 @@ services:
       - internal
 
   auth_db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine3.22
     container_name: auth_db
     env_file: ".env"
     environment:
@@ -84,7 +84,7 @@ services:
       - internal
 
   tournament_db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine3.22
     container_name: tournament_db
     env_file: ".env"
     environment:
@@ -124,7 +124,7 @@ services:
       - internal
 
   history_db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine3.22
     container_name: history_db
     env_file: ".env"
     environment:
