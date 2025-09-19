@@ -24,12 +24,12 @@ jobs:
         run: |
           echo "POSTGRES_USER=test_user" >> .env
           echo "POSTGRES_PASSWORD=test_pass" >> .env
-          echo "POSTGRES_AUTH_DB=test_db" >> .env
-          echo "POSTGRES_AUTH_HOST=localhost" >> .env
-          echo "POSTGRES_TOURNAMENT_DB=test_tournament" >> .env
-          echo "POSTGRES_TOURNAMENT_HOST=localhost" >> .env
-          echo "POSTGRES_HISTORY_DB=test_history" >> .env
-          echo "POSTGRES_HISTORY_HOST=localhost" >> .env
+          echo "POSTGRES_AUTH_DB=auth_db" >> .env
+          echo "POSTGRES_AUTH_HOST=auth_db" >> .env
+          echo "POSTGRES_TOURNAMENT_DB=tournament_db" >> .env
+          echo "POSTGRES_TOURNAMENT_HOST=tournament_db" >> .env
+          echo "POSTGRES_HISTORY_DB=history_db" >> .env
+          echo "POSTGRES_HISTORY_HOST=history_db" >> .env
           echo "CLOUDFLARE_TUNNEL_TOKEN=dummy" >> .env
           echo "POSTGRES_PORT=5432" >> .env
           echo "SECRET_KEY=test-secret-key" >> .env
