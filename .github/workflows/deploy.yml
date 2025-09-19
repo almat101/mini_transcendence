@@ -1,27 +1,30 @@
-# name: CI/CD Pipeline
+name: CI/CD Pipeline test
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   ci:
-#     name: Continuous Integration
-#     runs-on: ubuntu-latest
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-#       - name: Echo CI stage
-#         run: echo "CI Stage Code checkout complete."
+      - name: list files
+        run: ls -lR
+        
+      - name: Echo CI stage
+        run: echo "CI Stage Code checkout complete."
 
-#           #- name: Build Docker images
-#           #run: |
-#           #echo "CI Stage: Starting Docker build..."
-#           #docker compose build
-#           #echo "CI Stage Docker images built successfully."
+          #- name: Build Docker images
+          #run: |
+          #echo "CI Stage: Starting Docker build..."
+          #docker compose build
+          #echo "CI Stage Docker images built successfully."
 
 #   cd:
 #     name: Continuous Deployment
