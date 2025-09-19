@@ -14,17 +14,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: list files
-        run: ls -lR
-        
+      # - name: list files
+      #   run: ls -lR
+      
+      # - name: Run unit test
+      #   run: TODO
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Integration Test( backend auth-service)
+        run: docker compose run --rm auth-service python manage.py test auth_app
+
+      - name: Clean up containers
+        run: docker compose down
+
       - name: Echo CI stage
         run: echo "CI Stage Code checkout complete."
 
-          #- name: Build Docker images
-          #run: |
-          #echo "CI Stage: Starting Docker build..."
-          #docker compose build
-          #echo "CI Stage Docker images built successfully."
 
 #   cd:
 #     name: Continuous Deployment
