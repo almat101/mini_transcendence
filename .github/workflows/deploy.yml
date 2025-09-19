@@ -48,14 +48,47 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PA_TOKEN }} #expire in 90 days!
-
-      - name: Build and push Docker image
+          
+      - name: Build and push proxy image
         uses: docker/build-push-action@v5
         with:
+          context: ./proxy
+          file: ./proxy/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/mini_transcendence:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/mini_transcendence:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/proxy:${{ github.sha }}
+
+      - name: Build and push auth-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/auth_service
+          file: ./backend/auth_service/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+
+      - name: Build and push tournament-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/tournament-service
+          file: ./backend/tournament-service/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:${{ github.sha }}
+
+      - name: Build and push history-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/history
+          file: ./backend/history/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/history-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
+
 
       - name: Echo CI stage
         run: echo "CI Stage Code checkout complete."
