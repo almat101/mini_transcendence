@@ -136,7 +136,7 @@ jobs:
             --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
             --protocol tcp \
             --port 22 \
-            --cidr ${{ steps.ip.outputs.IP }}/32
+            --cidr ${{ steps.ip.outputs.IP }}/32 \
             --region ${{ secrets.AWS_REGION}}
 
       - name: Run ansible Deploy playbook
@@ -151,7 +151,7 @@ jobs:
             --group-id ${{ secrets.SECURITY_GROUP_ID }} \
             --protocol tcp \
             --port 22 \
-            --cidr ${{ steps.ip.outputs.IP }}/32
+            --cidr ${{ steps.ip.outputs.IP }}/32 \
             --region ${{ secrets.AWS_REGION}}
 
       - name: echo CD completion
