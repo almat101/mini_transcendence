@@ -141,6 +141,7 @@ jobs:
 
       - name: Write SSH key for runner
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" >> ~/.ssh/ubuntu_ec2.pem
           chmod 600 ~/.ssh/ubuntu_ec2.pem
 
