@@ -1,9 +1,10 @@
 services:
   proxy:
-    image: proxy
-    build:
-      context: ./proxy
-      dockerfile: Dockerfile
+    # image: proxy
+    # build:
+    #   context: ./proxy
+    #   dockerfile: Dockerfile
+    image: almat101/proxy:latest
     container_name: proxy
     restart: unless-stopped
     ports:
@@ -25,11 +26,12 @@ services:
       - internal
 
   auth-service:
-    image: auth-service
+    # image: auth-service
+    # build:
+    #   context: ./backend/auth_service
+    #   dockerfile: Dockerfile
+    image: almat101/auth-service:latest
     container_name: auth-service
-    build:
-      context: ./backend/auth_service
-      dockerfile: Dockerfile
     command: sh /app/start.sh
     env_file:
       - .env
@@ -65,11 +67,12 @@ services:
 
 
   tournament-service:
-    image: tournament-service
+    # image: tournament-service
+    # build:
+    #   context: ./backend/tournament-service
+    #   dockerfile: Dockerfile
+    image: almat101/tournament-service:latest
     container_name: tournament-service
-    build:
-      context: ./backend/tournament-service
-      dockerfile: Dockerfile
     command: >
       sh -c "python manage.py makemigrations &&
                python manage.py migrate &&
@@ -105,11 +108,12 @@ services:
       - internal
 
   history-service:
-    image: history-service
+    # image: history-service
+    # build:
+    #   context: ./backend/history
+    #   dockerfile: Dockerfile
+    image: almat101/history-service:latest
     container_name: history-service
-    build:
-      context: ./backend/history
-      dockerfile: Dockerfile
     command: >
       sh -c "python manage.py makemigrations &&
                python manage.py migrate &&
