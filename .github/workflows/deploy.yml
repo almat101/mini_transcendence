@@ -99,12 +99,16 @@ jobs:
     needs: ci
 
     steps:
-      - name: Set uo Python
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Create venv and install Ansible and community.docker
         run: |
+          cd ansible
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
@@ -112,10 +116,11 @@ jobs:
           ansible-galaxy collection install community.docker
 
       - name: Write ansible vault password to a file
-        run: echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > vault_pass.txt
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > ansible/vault_pass.txt
 
       - name: Run ansible Deploy playbook
         run: |
+          cd ansible
           source venv/bin/activate
           ansible-playbook playbooks/deploy.yml --vault-password-file .vaul_pass.txt
         
