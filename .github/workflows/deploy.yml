@@ -93,15 +93,39 @@ jobs:
       - name: Echo CI stage
         run: echo "CI Stage Code checkout complete."
 
-#   cd:
-#     name: Continuous Deployment
-#     runs-on: ubuntu-latest
-#     needs: ci
+  cd:
+    name: Continuous Deployment
+    runs-on: ubuntu-latest
+    needs: ci
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
+    steps:
+      - name: Set uo Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Create venv and install Ansible and community.docker
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install ansible
+          ansible-galaxy collection install community.docker
 
+      - name: Write ansible vault password to a file
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > vault_pass.txt
+
+      - name: Run ansible Deploy playbook
+        run: |
+          source venv/bin/activate
+          ansible-playbook playbooks/deploy.yml --vault-password-file .vaul_pass.txt
+        
+      - name: echo CD completion
+        run : echo "Continuous Deployment stage completed!" 
+
+
+######################
+### old deployment ###
+######################
 #       - name: Echo CD stage
 #         run: echo "CD Stage Preparing to deploy to EC2..."
 
