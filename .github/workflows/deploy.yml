@@ -116,13 +116,13 @@ jobs:
           ansible-galaxy collection install community.docker
 
       - name: Write ansible vault password to a file
-        run: echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > ansible/vault_pass.txt
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASS }}" > ansible/.vault_pass.txt
 
       - name: Run ansible Deploy playbook
         run: |
           cd ansible
           source venv/bin/activate
-          ansible-playbook playbooks/deploy.yml --vault-password-file .vaul_pass.txt
+          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt
         
       - name: echo CD completion
         run : echo "Continuous Deployment stage completed!" 
