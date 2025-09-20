@@ -9,8 +9,8 @@ app_dest_path: "/home/{{ app_owner_user }}/mini_transcendence"
 docker_compose_command: "docker compose"
 
 # utile a app_code per scaricare la repo
-# app_repo_url: "https://github.com/almat101/mini_transcendence.git"  ###HTTPS
-app_repo_url: "git@github.com:almat101/mini_transcendence.git" ###SSH
+app_repo_url: "https://github.com/almat101/mini_transcendence.git"  ###HTTPS
+# app_repo_url: "git@github.com:almat101/mini_transcendence.git" ###SSH
 app_branch: "main"
 # Altre variabili globali non sensibili
 
