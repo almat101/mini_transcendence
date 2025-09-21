@@ -1,0 +1,37 @@
+@startuml
+
+cloud "Internet" as internet
+
+
+node "AWS EC2 (Free Tier)" {
+  node "Docker Engine" {
+    RECTANGLE "proxy (NGINX)\n(almat101/proxy:latest)" as proxy
+    RECTANGLE "auth-service\n(almat101/auth-service:latest)" as auth
+    RECTANGLE "tournament-service\n(almat101/tournament-service:latest)" as tournament
+    RECTANGLE "history-service\n(almat101/history-service:latest)" as history
+    RECTANGLE "cloudflared\n(cloudflare/cloudflared:latest)" as cloudflared
+
+    database "auth_db\n(postgres:17-alpine3.22)" as auth_db
+    database "tournament_db\n(postgres:17-alpine3.22)" as tournament_db
+    database "history_db\n(postgres:17-alpine3.22)" as history_db
+
+    proxy -[hidden]-> auth
+    proxy -[hidden]-> tournament
+    proxy -[hidden]-> history
+
+    auth --> auth_db : uses
+    tournament --> tournament_db : uses
+    history --> history_db : uses
+
+    proxy --> auth : HTTP
+    proxy --> tournament : HTTP
+    proxy --> history : HTTP
+
+    cloudflared --> proxy : forwards traffic
+  }
+}
+
+internet --> cloudflared : HTTPS (Cloudflare Tunnel)
+
+
+@enduml

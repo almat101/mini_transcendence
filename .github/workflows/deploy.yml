@@ -90,9 +90,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
 
 
-      - name: Echo CI stage
-        run: echo "CI Stage Code checkout complete."
-
   cd:
     name: Continuous Deployment
     runs-on: ubuntu-latest
@@ -159,9 +156,6 @@ jobs:
             --port 22 \
             --cidr ${{ steps.ip.outputs.IP }}/32 \
             --region ${{ secrets.AWS_REGION}}
-
-      - name: echo CD completion
-        run : echo "Continuous Deployment stage completed!" 
 
 
 ######################

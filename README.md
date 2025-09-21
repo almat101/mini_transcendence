@@ -1,12 +1,54 @@
 # 🏓 mini_transcendence - Modern Pong Evolution 🚀 Enhanced with Ansible for Seamless Automation
 
-### All microservices are optimized to run on an AWS Free Tier VPS (hosting the Pong SPA site at [link](https://transcendence.alematta.com/)), which involved removing extensive DevOps components like Grafana/Prometheus and ELK. The existing GitHub Actions CI/CD pipeline is currently paused as I work to integrate Ansible automation for future deployments.
+### All microservices are optimized by using Alpine-based images to run on an AWS Free Tier EC2 (hosting the Pong SPA site at [link](https://transcendence.alematta.com/)). Extensive DevOps components like Grafana, Prometheus, and ELK were removed due to AWS Free Tier limitations.
 
 ## 📚 Documentation
 
 - 🚀 [Ansible Deployment Guide](ansible.md) - Complete automation setup and deployment instructions
 
 A next-generation Pong experience with tournaments, AI opponents, and advanced web features, created as part of 42 School's curriculum.
+
+---
+
+## 🗺️ Architecture Overview
+
+Below is a high-level architecture diagram of the mini_transcendence platform, showing how traffic flows from the Internet through Cloudflare Tunnel (enabling HTTPS) to the EC2 instance, where the Dockerized microservices and databases run behind an NGINX reverse proxy.
+
+![Architecture Diagram](architecture.png)
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+The project uses a modern CI/CD pipeline managed via [GitHub Actions](.github/workflows/deploy.yml):
+
+### 🛠️ Continuous Integration (CI)
+- **Trigger:** On every push to the `main` branch
+- **Steps:**
+  - Checkout code
+  - Set up dummy environments
+  - Build all Docker images
+  - Run integration test 
+  - Clean up containers
+  - Login to Docker Hub
+  - Build and push images to Docker Hub with appropriate tags
+
+### 🚀 Continuous Deployment (CD)
+- **Trigger:** After successful CI completion
+- **Steps:**
+  - Checkout code
+  - Set up Python, create virtual environment, and install Ansible
+  - Write Ansible vault password to a file from GitHub secrets
+  - Configure AWS credentials (AWS CLI)
+  - Get the current public IP of the runner
+  - Open SSH port on the target EC2 instance only for the runner's IP (for secure deploy)
+  - Write EC2 SSH key to a file for the runner
+  - Run Ansible playbooks to deploy the latest Docker images to the AWS VPS
+  - Close the SSH port after deployment for security
+
+You can find the workflow definition in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+
+---
 
 ## ✅ Implemented Features Checklist
 
