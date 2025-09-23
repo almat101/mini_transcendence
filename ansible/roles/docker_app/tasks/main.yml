@@ -14,10 +14,19 @@
   become: yes
   become_user: "{{ app_owner_user }}"
 
-- name: Build Docker Compose services
+# #### Sostituzione di docker compose build con docker compose pull delle immagini dal dockerhub
+
+# - name: Build Docker Compose services
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path }}"
+#     build: always # Forziamo la ricostruzione ogni volta per coerenza
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
+
+- name: Pull latest Docker images from Docker Hub
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path }}"
-    build: always # Forziamo la ricostruzione ogni volta per coerenza
+    pull: always  # Forza il pull delle immagini più recenti
   become: yes
   become_user: "{{ app_owner_user }}"
 
