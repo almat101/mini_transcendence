@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ANSIBLE_PROJECT_DIR=$(pwd)
-VENV_NAME="venv"
+VENV_NAME=".venv"
 VENV_PATH="$ANSIBLE_PROJECT_DIR/$VENV_NAME"
 
 echo "Checking python version..."
