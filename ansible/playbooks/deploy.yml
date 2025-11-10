@@ -24,7 +24,7 @@
 ---
 - name: Deploy mini_transcendence application
 
-  hosts: ec2_hosts
+  hosts: hetzner_instance
   become: yes
   gather_facts: yes
 

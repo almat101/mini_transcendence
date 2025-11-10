@@ -1,6 +1,6 @@
 ---
   - name: Stop and remove docker containers
-    hosts: ec2_hosts
+    hosts: hetzner_instance
     become: yes
     tasks:
       - name: print app_dest_path
