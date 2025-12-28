@@ -1,0 +1,143 @@
+services:
+  proxy:
+    image: almat101/proxy:{{docker_image_tag}}
+    container_name: proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - history-service
+      - tournament-service
+    volumes:
+      - media:/app/media:rw
+      - proxy_logs:/var/log/nginx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -k http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+  auth-service:
+    image: almat101/auth-service:{{docker_image_tag}}
+    container_name: auth-service
+    command: ["gunicorn","auth_service.wsgi:application","--bind","0.0.0.0:8001","--workers","1","--threads","4"]
+    environment:
+      - SECRET_KEY="{{SECRET_KEY}}"
+    restart: unless-stopped
+    volumes:
+      - media:/app/media:rw
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  auth_db:
+    image: postgres:17-alpine3.22
+    container_name: auth_db
+    environment:
+      - POSTGRES_USER="{{ POSTGRES_USER }}
+      - POSTGRES_PASSWORD="{{ POSTGRES_PASSWORD }}"
+      - POSTGRES_DB="{{ POSTGRES_AUTH_DB }}"
+      - POSTGRES_HOST="{{ POSTGRES_AUTH_HOST }}"
+    restart: always
+    volumes:
+      - postgres_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ POSTGRES_USER }} -d {{ POSTGRES_DB }}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+
+  tournament-service:
+    image: almat101/tournament-service:{{docker_image_tag}}
+    container_name: tournament-service
+    command: ["gunicorn","tournament.wsgi:application","--bind","0.0.0.0:8003","--workers","1","--threads","4"] 
+    environment:
+      - SECRET_KEY_TOURNAMENT="{SECRET_KEY_TOURNAMENT}"
+    restart: unless-stopped
+    depends_on:
+      tournament_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  tournament_db:
+    image: postgres:17-alpine3.22
+    container_name: tournament_db
+    environment:
+      - POSTGRES_USER="{{POSTGRES_USER}}"
+      - POSTGRES_PASSWORD="{{POSTGRES_PASSWORD}}"
+      - POSTGRES_DB="{{POSTGRES_TOURNAMENT_DB}}"
+      - POSTGRES_HOST="{{POSTGRES_TOURNAMENT_HOST}}"
+    restart: always
+    volumes:
+      - postgres_tournament:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{POSTGRES_USER}} -d {{POSTGRES_DB}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+  history-service:
+    image: almat101/history-service:{{docker_image_tag}}
+    container_name: history-service
+    command: ["gunicorn","history_service.wsgi:application","--bind","0.0.0.0:8002","--workers","1","--threads","4"]
+    environment:
+      - SECRET_KEY_HISTORY="{{SECRET_KEY_HISTORY}}"
+    restart: unless-stopped
+    depends_on:
+      history_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  history_db:
+    image: postgres:17-alpine3.22
+    container_name: history_db
+    environment:
+      - POSTGRES_USER={{POSTGRES_USER}}
+      - POSTGRES_PASSWORD={{POSTGRES_PASSWORD}}
+      - POSTGRES_DB={{POSTGRES_HISTORY_DB}}
+      - POSTGRES_HOST={{POSTGRES_HISTORY_HOST}}
+    restart: always
+    volumes:
+      - postgres_history:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{POSTGRES_USER}} -d {{POSTGRES_DB}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+  
+  cloudflared:
+    image: cloudflare/cloudflared:{{docker_image_tag}}
+    container_name: cloudflared
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run", "--token", "{{ CLOUDFLARE_TUNNEL_TOKEN }}"]
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  proxy_logs:
+  postgres_auth:
+  postgres_tournament:
+  postgres_history:
+  media:

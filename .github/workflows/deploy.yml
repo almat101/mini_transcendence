@@ -1,4 +1,4 @@
-name: CI/CD Pipeline test
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,6 +9,22 @@ jobs:
   ci:
     name: Continuous Integration
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_AUTH_DB: auth_db
+      POSTGRES_AUTH_HOST: auth_db
+      POSTGRES_TOURNAMENT_DB: tournament_db
+      POSTGRES_TOURNAMENT_HOST: tournament_db
+      POSTGRES_HISTORY_DB: history_db
+      POSTGRES_HISTORY_HOST: history_db
+      CLOUDFLARE_TUNNEL_TOKEN: dummy
+      POSTGRES_PORT: 5432
+      SECRET_KEY: test-secret-key
+      SECRET_KEY_HISTORY: test-secret-key-history
+      SECRET_KEY_TOURNAMENT: test-secret-key-tournament
+      JWT_ALGO: HS256
+
 
     steps:
       - name: Checkout code
@@ -16,23 +32,6 @@ jobs:
 
       # - name: Run unit test
       #   run: TODO
-
-      - name: Generate dummy .env for CI
-        run: |
-          echo "POSTGRES_USER=test_user" >> .env
-          echo "POSTGRES_PASSWORD=test_pass" >> .env
-          echo "POSTGRES_AUTH_DB=auth_db" >> .env
-          echo "POSTGRES_AUTH_HOST=auth_db" >> .env
-          echo "POSTGRES_TOURNAMENT_DB=tournament_db" >> .env
-          echo "POSTGRES_TOURNAMENT_HOST=tournament_db" >> .env
-          echo "POSTGRES_HISTORY_DB=history_db" >> .env
-          echo "POSTGRES_HISTORY_HOST=history_db" >> .env
-          echo "CLOUDFLARE_TUNNEL_TOKEN=dummy" >> .env
-          echo "POSTGRES_PORT=5432" >> .env
-          echo "SECRET_KEY=test-secret-key" >> .env
-          echo "SECRET_KEY_HISTORY=test-secret-key-history" >> .env
-          echo "SECRET_KEY_TOURNAMENT=test-secret-key-tournament" >> .env
-          echo "JWT_ALGO=HS256" >> .env
 
       - name: Build Docker images
         run: docker compose build
@@ -56,7 +55,6 @@ jobs:
           file: ./proxy/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/proxy:${{ github.sha }}
 
       - name: Build and push auth-service image
@@ -66,7 +64,6 @@ jobs:
           file: ./backend/auth_service/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
 
       - name: Build and push tournament-service image
@@ -76,7 +73,6 @@ jobs:
           file: ./backend/tournament-service/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:${{ github.sha }}
 
       - name: Build and push history-service image
@@ -86,13 +82,8 @@ jobs:
           file: ./backend/history/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/history-service:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
 
-
-  ### Continuous deployment commented out to enable manual trigger (Continuous Delivery)
-  ### This gives me more control because I can choose what app goes live on my single AWS free tier
-  ### The deployment process is still automated via Ansible, just manually triggered
 
   cd:
     name: Continuous Deployment
@@ -132,4 +123,4 @@ jobs:
         run: |
           cd ansible
           source venv/bin/activate
-          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'
+          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' -e "docker_image_tag=${{ github.sha }}"

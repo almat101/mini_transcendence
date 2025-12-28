@@ -52,7 +52,12 @@
 
     # Ruolo 3: Deployment dei file di configurazione dell'applicazione.
     # Inserisce il file .env (popolato con le variabili, incluse quelle sensibili dal Vault).
-    - app_config
+    # - app_config
+    # aggiunto pattern 12-factory app build-release-run
+    # Sostituito con app release che usa variabili iniettate direttamente nel container eliminando il file .env dal disco
+    # Questo roles crea dal template .j2 il docker-compose.yml finale che docker_app lancera.
+    # Aggiunte anche le migrazioni dei db
+    - app_release
 
     # Ruolo 4: Gestione del ciclo di vita dell'applicazione Docker.
     # Include la fase di build delle immagini Docker locali e l'avvio dei servizi Docker Compose.

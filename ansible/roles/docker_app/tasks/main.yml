@@ -23,12 +23,13 @@
 #   become: yes
 #   become_user: "{{ app_owner_user }}"
 
-- name: Pull latest Docker images from Docker Hub
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dest_path }}"
-    pull: always  # Forza il pull delle immagini più recenti
-  become: yes
-  become_user: "{{ app_owner_user }}"
+## la fase release pulla le immagini
+# - name: Pull latest Docker images from Docker Hub
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path }}"
+#     pull: always  # Forza il pull delle immagini più recenti
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
 
 - name: Start Docker Compose services
   community.docker.docker_compose_v2:
@@ -41,3 +42,14 @@
 - name: Display Docker Compose status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+
+- name: Wait for proxy health endpoint
+  ansible.builtin.uri:
+    url: "http://localhost:80/"
+    status_code: 200
+    timeout: 5
+  register: siteup
+  retries: 8
+  delay: 5
+  until: siteup.status == 200
+  failed_when: siteup.status is not defined or siteup.status != 200

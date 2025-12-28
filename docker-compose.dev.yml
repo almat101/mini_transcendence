@@ -1,0 +1,167 @@
+services:
+  proxy:
+    image: proxy
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    # image: almat101/proxy:latest
+    container_name: proxy
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    depends_on:
+      - auth-service
+      - history-service
+      - tournament-service
+    volumes:
+      - media:/app/media:rw
+      - proxy_logs:/var/log/nginx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -k http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+  auth-service:
+    image: auth-service
+    build:
+      context: ./backend/auth_service
+      dockerfile: Dockerfile
+    # image: almat101/auth-service:latest
+    container_name: auth-service
+    command: ["gunicorn","auth_service.wsgi:application","--bind","0.0.0.0:8001","--workers","1","--threads","4"]
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./backend/auth_service/django:/app:rw
+      - media:/app/media:rw
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  auth_db:
+    image: postgres:17-alpine3.22
+    container_name: auth_db
+    env_file: ".env"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_AUTH_DB}
+      - POSTGRES_HOST=${POSTGRES_AUTH_HOST}
+    restart: always
+    volumes:
+      - postgres_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s    # Increased from 10s
+      timeout: 10s     # Increased from 5s
+      retries: 3       # Decreased from 5
+      start_period: 20s
+    networks:
+      - internal
+
+
+  tournament-service:
+    image: tournament-service
+    build:
+      context: ./backend/tournament-service
+      dockerfile: Dockerfile
+    # image: almat101/tournament-service:latest
+    container_name: tournament-service
+    command: ["gunicorn","tournament.wsgi:application","--bind","0.0.0.0:8003","--workers","1","--threads","4"] 
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./backend/tournament-service:/app:rw
+    depends_on:
+      tournament_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  tournament_db:
+    image: postgres:17-alpine3.22
+    container_name: tournament_db
+    env_file: ".env"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_TOURNAMENT_DB}
+      - POSTGRES_HOST=${POSTGRES_TOURNAMENT_HOST}
+    restart: always
+    volumes:
+      - postgres_tournament:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+
+  history-service:
+    image: history-service
+    build:
+      context: ./backend/history
+      dockerfile: Dockerfile
+    # image: almat101/history-service:latest
+    container_name: history-service
+    command: ["gunicorn","history_service.wsgi:application","--bind","0.0.0.0:8002","--workers","1","--threads","4"]
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./backend/history:/app:rw
+    depends_on:
+      history_db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  history_db:
+    image: postgres:17-alpine3.22
+    container_name: history_db
+    env_file: ".env"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_HISTORY_DB}
+      - POSTGRES_HOST=${POSTGRES_HISTORY_HOST}
+    restart: always
+    volumes:
+      - postgres_history:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - internal
+  
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: cloudflared
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+  #   networks:
+  #     - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  proxy_logs:
+  postgres_auth:
+  postgres_tournament:
+  postgres_history:
+  media:

@@ -1,0 +1,38 @@
+---
+- name: Release fase - Create docker compose from template
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dest_path }}/docker-compose.yml"
+    owner: "{{ app_owner_user }}"
+    group: "{{ app_owner_user }}"
+    mode: '0600'
+  no_log: true
+  become: yes
+
+- name: Pull images referenced in docker-compose (ensure exact tag is available)
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path }}"
+    pull: yes
+  become: yes
+
+# Run once only (on first host / single deploy host). If your play targets many hosts,
+- name: Run auth-service migrations (one-off)
+  ansible.builtin.command: >
+    docker compose -f {{ app_dest_path }}/docker-compose.yml run --rm auth-service
+    python manage.py migrate --noinput
+  args:
+    chdir: "{{ app_dest_path }}"
+  register: auth_migration_output
+  become: yes
+  run_once: true
+  failed_when: auth_migration_output.rc != 0
+
+- name: Show auth migration output
+  ansible.builtin.debug:
+    var: auth_migration_output.stdout_lines
+
+- name: Start/Update stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path }}"
+    state: present
+  become: yes
