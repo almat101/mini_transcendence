@@ -1,5 +1,13 @@
 # roles/docker_app/tasks/main.yml
 ---
+
+- name: Login to GitHub Container Registry
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ github_username }}"
+    password: "{{ github_pat_token }}"
+    reauthorize: yes
+
 - name: Ensure Docker Compose is available (sanity check)
   ansible.builtin.command: "{{ docker_compose_command }} version"
   register: docker_compose_version_check
@@ -28,6 +36,8 @@
     project_src: "{{ app_dest_path }}"
     pull: always  # Forza il pull delle immagini più recenti
   become: yes
+  environment:
+    IMAGE_TAG: "{{ image_tag }}" # aggiunto per eliminare il tag latest!
   become_user: "{{ app_owner_user }}"
 
 - name: Start Docker Compose services

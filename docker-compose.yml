@@ -4,7 +4,7 @@ services:
     # build:
     #   context: ./proxy
     #   dockerfile: Dockerfile
-    image: almat101/proxy:latest
+    image: ghcr.io/almat101/proxy:${IMAGE_TAG}
     container_name: proxy
     restart: unless-stopped
     ports:
@@ -30,7 +30,7 @@ services:
     # build:
     #   context: ./backend/auth_service
     #   dockerfile: Dockerfile
-    image: almat101/auth-service:latest
+    image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
     container_name: auth-service
     command: sh /app/start.sh
     env_file:
@@ -71,7 +71,7 @@ services:
     # build:
     #   context: ./backend/tournament-service
     #   dockerfile: Dockerfile
-    image: almat101/tournament-service:latest
+    image: ghcr.io/almat101/tournament-service:${IMAGE_TAG}
     container_name: tournament-service
     command: >
       sh -c "python manage.py makemigrations &&
@@ -112,7 +112,7 @@ services:
     # build:
     #   context: ./backend/history
     #   dockerfile: Dockerfile
-    image: almat101/history-service:latest
+    image: ghcr.io/almat101/history-service:${IMAGE_TAG}
     container_name: history-service
     command: >
       sh -c "python manage.py makemigrations &&

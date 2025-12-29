@@ -1,9 +1,16 @@
-name: CI/CD Pipeline test
-
+name: CI/CD Pipeline
 on:
   push:
     branches:
       - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  packages: write
+  contents: read
 
 jobs:
   ci:
@@ -43,21 +50,48 @@ jobs:
       - name: Clean up containers
         run: docker compose down
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PA_TOKEN }} #expire in 90 days!
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+        
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_PA_TOKEN }} #expire in 90 days!
           
+      # - name: Build and push proxy image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./proxy
+      #     file: ./proxy/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/proxy:${{ github.sha }}
+
       - name: Build and push proxy image
         uses: docker/build-push-action@v5
         with:
           context: ./proxy
           file: ./proxy/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/proxy:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
+
+
+      # - name: Build and push auth-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/auth_service
+      #     file: ./backend/auth_service/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
 
       - name: Build and push auth-service image
         uses: docker/build-push-action@v5
@@ -65,9 +99,17 @@ jobs:
           context: ./backend/auth_service
           file: ./backend/auth_service/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
+
+      # - name: Build and push tournament-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/tournament-service
+      #     file: ./backend/tournament-service/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:latest
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:${{ github.sha }}
 
       - name: Build and push tournament-service image
         uses: docker/build-push-action@v5
@@ -75,9 +117,17 @@ jobs:
           context: ./backend/tournament-service
           file: ./backend/tournament-service/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
+
+      # - name: Build and push history-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/history
+      #     file: ./backend/history/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/history-service:latest
+      #       ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
 
       - name: Build and push history-service image
         uses: docker/build-push-action@v5
@@ -85,10 +135,7 @@ jobs:
           context: ./backend/history
           file: ./backend/history/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/history-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
-
+          tags: ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
 
   ### Continuous deployment commented out to enable manual trigger (Continuous Delivery)
   ### This gives me more control because I can choose what app goes live on my single AWS free tier
@@ -132,4 +179,4 @@ jobs:
         run: |
           cd ansible
           source venv/bin/activate
-          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'
+          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' -e "image_tag=${{ github.sha }}"
