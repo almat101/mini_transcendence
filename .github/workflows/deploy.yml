@@ -47,6 +47,7 @@ jobs:
           echo "SECRET_KEY_HISTORY=test-secret-key-history" >> .env
           echo "SECRET_KEY_TOURNAMENT=test-secret-key-tournament" >> .env
           echo "JWT_ALGO=HS256" >> .env
+          echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
 
       - name: Build Docker images
         run: docker compose build
