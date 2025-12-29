@@ -1,9 +1,9 @@
 services:
   proxy:
     # image: proxy
-    # build:
-    #   context: ./proxy
-    #   dockerfile: Dockerfile
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
     image: ghcr.io/almat101/proxy:${IMAGE_TAG}
     container_name: proxy
     restart: unless-stopped
@@ -27,9 +27,9 @@ services:
 
   auth-service:
     # image: auth-service
-    # build:
-    #   context: ./backend/auth_service
-    #   dockerfile: Dockerfile
+    build:
+      context: ./backend/auth_service
+      dockerfile: Dockerfile
     image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
     container_name: auth-service
     command: sh /app/start.sh
@@ -68,9 +68,9 @@ services:
 
   tournament-service:
     # image: tournament-service
-    # build:
-    #   context: ./backend/tournament-service
-    #   dockerfile: Dockerfile
+    build:
+      context: ./backend/tournament-service
+      dockerfile: Dockerfile
     image: ghcr.io/almat101/tournament-service:${IMAGE_TAG}
     container_name: tournament-service
     command: >
@@ -109,9 +109,9 @@ services:
 
   history-service:
     # image: history-service
-    # build:
-    #   context: ./backend/history
-    #   dockerfile: Dockerfile
+    build:
+      context: ./backend/history
+      dockerfile: Dockerfile
     image: ghcr.io/almat101/history-service:${IMAGE_TAG}
     container_name: history-service
     command: >
