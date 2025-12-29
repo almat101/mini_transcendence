@@ -58,22 +58,6 @@ jobs:
       - name: Clean up containers
         run: docker compose down
 
-      # - name: Login to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_PA_TOKEN }} #expire in 90 days!
-          
-      # - name: Build and push proxy image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./proxy
-      #     file: ./proxy/Dockerfile
-      #     push: true
-      #     tags: |
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/proxy:latest
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/proxy:${{ github.sha }}
-
       - name: Build and push proxy image
         uses: docker/build-push-action@v5
         with:
@@ -81,17 +65,6 @@ jobs:
           file: ./proxy/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
-
-
-      # - name: Build and push auth-service image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./backend/auth_service
-      #     file: ./backend/auth_service/Dockerfile
-      #     push: true
-      #     tags: |
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
 
       - name: Build and push auth-service image
         uses: docker/build-push-action@v5
@@ -101,16 +74,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
 
-      # - name: Build and push tournament-service image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./backend/tournament-service
-      #     file: ./backend/tournament-service/Dockerfile
-      #     push: true
-      #     tags: |
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:latest
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/tournament-service:${{ github.sha }}
-
       - name: Build and push tournament-service image
         uses: docker/build-push-action@v5
         with:
@@ -119,16 +82,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
 
-      # - name: Build and push history-service image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./backend/history
-      #     file: ./backend/history/Dockerfile
-      #     push: true
-      #     tags: |
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/history-service:latest
-      #       ${{ secrets.DOCKERHUB_USERNAME }}/history-service:${{ github.sha }}
-
       - name: Build and push history-service image
         uses: docker/build-push-action@v5
         with:
@@ -136,10 +89,6 @@ jobs:
           file: ./backend/history/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
-
-  ### Continuous deployment commented out to enable manual trigger (Continuous Delivery)
-  ### This gives me more control because I can choose what app goes live on my single AWS free tier
-  ### The deployment process is still automated via Ansible, just manually triggered
 
   cd:
     name: Continuous Deployment
@@ -180,3 +129,45 @@ jobs:
           cd ansible
           source venv/bin/activate
           ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' -e "image_tag=${{ github.sha }}"
+
+  cleanup:
+    name: cleanup
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Cleanup old versions (Proxy)
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'proxy'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'false'
+          token: ${{ secrets.PAT }}
+
+      - name: Cleanup old versions (Auth)
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'auth-service'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'false'
+          token: ${{ secrets.PAT }}
+
+      - name: Cleanup old versions (Tournament)
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'tournament-service'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'false'
+          token: ${{ secrets.PAT }}
+
+      - name: Cleanup old versions (History)
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'history-service'
+          package-type: 'container'
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: 'false'
+          token: ${{ secrets.PAT }}
