@@ -23,6 +23,23 @@
     IMAGE_TAG: "{{ image_tag }}"
   become_user: "{{ app_owner_user }}"
 
+- name: Start Database services only
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path }}"
+    state: present
+    services:
+      - auth_db
+      - tournament_db
+      - history_db
+  environment:
+    IMAGE_TAG: "{{ image_tag }}"
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Wait for PostgreSQL to be ready
+  ansible.builtin.pause:
+    seconds: 10
+
 - name: Run migrations (BLOCKING)
   community.docker.docker_container:
     name: "{{ item }}_migration_runner"
@@ -30,7 +47,8 @@
     command: python manage.py migrate --noinput
     env_file: "{{ app_dest_path }}/.env"
     networks:
-      - name: internal 
+      - name: mini_transcendence_internal
+    network_mode: default
     cleanup: yes
     detach: no
   loop:

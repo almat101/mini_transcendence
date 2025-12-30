@@ -34,7 +34,7 @@ services:
       retries: 3
       start_period: 20s
     networks:
-      - internal
+      - mini_transcendence_internal
 
   auth-service:
     image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
@@ -58,7 +58,7 @@ services:
       auth_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
   auth_db:
     image: postgres:17-alpine3.22
@@ -79,7 +79,7 @@ services:
       retries: 3
       start_period: 20s
     networks:
-      - internal
+      - mini_transcendence_internal
 
 
   tournament-service:
@@ -102,7 +102,7 @@ services:
       tournament_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
   tournament_db:
     image: postgres:17-alpine3.22
@@ -123,7 +123,7 @@ services:
       retries: 3
       start_period: 20s
     networks:
-      - internal
+      - mini_transcendence_internal
 
   history-service:
     image: ghcr.io/almat101/history-service:${IMAGE_TAG}
@@ -145,7 +145,7 @@ services:
       history_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
   history_db:
     image: postgres:17-alpine3.22
@@ -166,7 +166,7 @@ services:
       retries: 3
       start_period: 20s
     networks:
-      - internal
+      - mini_transcendence_internal
   
   cloudflared:
     image: cloudflare/cloudflared:2025.11.1
@@ -174,7 +174,7 @@ services:
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     networks:
-      - internal
+      - mini_transcendence_internal
 
   #monitoring
   grafana:
@@ -199,7 +199,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - internal
+      - mini_transcendence_internal
 
 
   prometheus:
@@ -223,7 +223,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - internal
+      - mini_transcendence_internal
 
   node-exporter:
     image: prom/node-exporter:v1.9.0
@@ -242,7 +242,7 @@ services:
       start_period: 10s
       timeout: 10s
     networks:
-      - internal
+      - mini_transcendence_internal
 
   alertmanager:
     image: prom/alertmanager:v0.28.1
@@ -264,7 +264,7 @@ services:
       start_period: 10s
       timeout: 10s
     networks:
-      - internal
+      - mini_transcendence_internal
 
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:1.4
@@ -276,7 +276,7 @@ services:
       "--nginx.scrape-uri", "http://proxy:8080/stub_status",
     ]
     networks:
-      - internal
+      - mini_transcendence_internal
 
   postgres-exporter-auth-db:
     image: prometheuscommunity/postgres-exporter:v0.16.0
@@ -290,7 +290,7 @@ services:
       auth_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
   postgres-exporter-tournament-db:
     image: prometheuscommunity/postgres-exporter:v0.16.0
@@ -306,7 +306,7 @@ services:
       tournament_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
   postgres-exporter-history-db:
     image: prometheuscommunity/postgres-exporter:v0.16.0
@@ -322,11 +322,11 @@ services:
       history_db:
         condition: service_healthy
     networks:
-      - internal
+      - mini_transcendence_internal
 
 
 networks:
-  internal:
+  mini_transcendence_internal:
     driver: bridge
 
 volumes:
