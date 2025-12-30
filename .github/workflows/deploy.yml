@@ -52,7 +52,19 @@ jobs:
       - name: Build Docker images
         run: docker compose build
 
-      - name: Integration Test( backend auth-service)
+      - name: Start database and wait for be healthy
+        run: docker compose up -d --wait auth_db tournament_db history_db 
+
+      - name: Check for missing migrations in auth-service
+        run: docker compose run --rm auth-service python manage.py makemigrations --check --dry-run
+
+      - name: Check for missing migrations in tournament-service
+        run: docker compose run --rm tournament-service python manage.py makemigrations --check --dry-run
+
+      - name: Check for missing migrations in history-service
+        run: docker compose run --rm history-service python manage.py makemigrations --check --dry-run
+
+      - name: Integration Test ( auth-service)
         run: docker compose run --rm auth-service python manage.py test auth_app
 
       - name: Clean up containers

@@ -42,7 +42,7 @@ services:
       context: ./backend/auth_service
       dockerfile: Dockerfile
     container_name: auth-service
-    command: sh /app/start.sh
+    command: gunicorn auth_service.wsgi:application --bind 0.0.0.0:8001 --workers=1 --threads=4
     env_file:
       - .env
     restart: unless-stopped
@@ -88,10 +88,7 @@ services:
       context: ./backend/tournament-service
       dockerfile: Dockerfile
     container_name: tournament-service
-    command: >
-      sh -c "python manage.py makemigrations &&
-               python manage.py migrate &&
-               gunicorn tournament.wsgi:application --bind 0.0.0.0:8003 --workers=1 --threads=4"
+    command: gunicorn tournament.wsgi:application --bind 0.0.0.0:8003 --workers=1 --threads=4
     env_file:
       - .env
     restart: unless-stopped
@@ -134,10 +131,7 @@ services:
       context: ./backend/history
       dockerfile: Dockerfile
     container_name: history-service
-    command: >
-      sh -c "python manage.py makemigrations &&
-               python manage.py migrate &&
-               gunicorn history_service.wsgi:application --bind 0.0.0.0:8002 --workers=1 --threads=4"
+    command: gunicorn history_service.wsgi:application --bind 0.0.0.0:8002 --workers=1 --threads=4
     env_file:
       - .env
     restart: unless-stopped

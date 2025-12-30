@@ -14,13 +14,53 @@
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
 
-- name: Stop and remove existing Docker Compose services if running
+- name: Pull latest Docker images from GitHub Container Registry
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path }}"
-    state: absent # Arresta e rimuove i container e le reti
-  ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+    pull: always
+  become: yes
+  environment:
+    IMAGE_TAG: "{{ image_tag }}"
+  become_user: "{{ app_owner_user }}"
+
+- name: Run migrations (BLOCKING)
+  community.docker.docker_container:
+    name: "{{ item }}_migration_runner"
+    image: "ghcr.io/almat101/{{ item }}:{{ IMAGE_TAG }}
+    command: python manage.py migrate --noinput
+    env_file: "{{ app_dest_path }}/.env"
+    networks:
+      - name: internal 
+    cleanup: yes
+    detach: no
+  loop:
+    - auth-service
+    - tournament-service
+    - history-service
+  become: yes
+
+- name: Update and restart docker compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path }}"
+    state: present
+  environment:
+    IMAGE_TAG: "{{ image_tag }}"
   become: yes
   become_user: "{{ app_owner_user }}"
+  register: docker_compose_result
+
+- name: Display status
+  ansible.builtin.debug:
+    var: docker_compose_result
+    # msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+
+# - name: Stop and remove existing Docker Compose services if running
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path }}"
+#     state: absent # Arresta e rimuove i container e le reti
+#   ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
 
 # #### Sostituzione di docker compose build con docker compose pull delle immagini
 
@@ -30,24 +70,3 @@
 #     build: always # Forziamo la ricostruzione ogni volta per coerenza
 #   become: yes
 #   become_user: "{{ app_owner_user }}"
-
-- name: Pull latest Docker images from GitHub Container Registry
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dest_path }}"
-    pull: always  # Forza il pull delle immagini più recenti
-  become: yes
-  environment:
-    IMAGE_TAG: "{{ image_tag }}" # aggiunto per eliminare il tag latest!
-  become_user: "{{ app_owner_user }}"
-
-- name: Start Docker Compose services
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dest_path }}"
-    state: present # Assicura che i servizi siano su
-  become: yes
-  become_user: "{{ app_owner_user }}"
-  register: docker_compose_start_result
-
-- name: Display Docker Compose status
-  ansible.builtin.debug:
-    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"

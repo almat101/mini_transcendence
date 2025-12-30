@@ -47,4 +47,19 @@ dev-down:
 dev-clean:
 	docker compose -f docker-compose.dev.yml down -v
 
+# DEV one-off migrations
+migrate-dev-run-auth:
+	docker compose -f docker-compose.dev.yml run --rm auth-service python manage.py makemigrations
+	docker compose -f docker-compose.dev.yml run --rm auth-service python manage.py migrate
+
+migrate-dev-run-tournament:
+	docker compose -f docker-compose.dev.yml run --rm tournament-service python manage.py makemigrations
+	docker compose -f docker-compose.dev.yml run --rm tournament-service python manage.py migrate
+
+migrate-dev-run-history:
+	docker compose -f docker-compose.dev.yml run --rm history-service python manage.py makemigrations
+	docker compose -f docker-compose.dev.yml run --rm history-service python manage.py migrate
+
+migrate-dev-run-all: migrate-dev-run-auth migrate-dev-run-tournament migrate-dev-run-history
+
 .PHONY: all up down start stop clean fclean re prune ps images exec list-all list-all-id dev-up dev-down dev-clean
