@@ -1,6 +1,6 @@
 services:
   proxy:
-    image: proxy-dev
+    image: proxy
     # image: ghcr.io/almat101/proxy:${IMAGE_TAG}
     build:
       context: ./proxy
@@ -38,7 +38,7 @@ services:
       - internal
 
   auth-service:
-    image: auth-service-dev
+    image: auth-service
     # image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
     build:
       context: ./backend/auth_service
@@ -89,7 +89,7 @@ services:
 
 
   tournament-service:
-    image: tournament-service-dev
+    image: tournament-service
     # image: ghcr.io/almat101/tournament-service:${IMAGE_TAG}
     build:
       context: ./backend/tournament-service
@@ -138,7 +138,7 @@ services:
       - internal
 
   history-service:
-    image: history-service-dev
+    image: history-service
     # image: ghcr.io/almat101/history-service:${IMAGE_TAG}
     build:
       context: ./backend/history
@@ -196,15 +196,12 @@ services:
 
   #monitoring
   grafana:
-    image: grafana
-    build:
-      context: ./monitoring/grafana
-      dockerfile: Dockerfile
+    image: grafana/grafana:12.3
     container_name: grafana
     env_file: ".env"
     restart: unless-stopped
     environment:
-      - GF_SERVER_ROOT_URL=https://localhost:8090/grafana/
+      - GF_SERVER_ROOT_URL=https://localhost:80/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH="true"
     volumes:
       - grafana_data:/var/lib/grafana
@@ -223,14 +220,19 @@ services:
       - internal
 
   prometheus:
-    image: prometheus
-    build:
-      context: ./monitoring/prometheus
-      dockerfile: Dockerfile
+    image: prom/prometheus:v3.8.1
     container_name: prometheus
     restart: unless-stopped
     volumes:
       - prometheus_data:/prometheus/data
+      - ./monitoring/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=10d'
+      - '--web.external-url=https://localhost:80/prometheus/'
+      - '--web.route-prefix=/'
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
       interval: 10s
@@ -241,15 +243,15 @@ services:
       - internal
 
   node-exporter:
-    image: node-exporter
-    build:
-      context: ./monitoring/node-exporter
-      dockerfile: Dockerfile
+    image: prom/node-exporter:v1.10.2
     container_name: node-exporter
     restart: unless-stopped
     depends_on:
       prometheus:
         condition: service_healthy
+    command:
+      - '--no-collector.thermal_zone'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/)'
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://localhost:9100 || exit 1"]
       interval: 30s
@@ -260,10 +262,7 @@ services:
       - internal
 
   alertmanager:
-    image: alertmanager
-    build:
-      context: ./monitoring/alertmanager
-      dockerfile: Dockerfile
+    image: prom/alertmanager:v0.30
     container_name: alertmanager
     env_file: ".env"
     restart: unless-stopped
@@ -271,6 +270,10 @@ services:
      - prometheus
     volumes:
       - alertmanager_data:/data
+      - ./monitoring/alertmanager/tools/alert_email.sh:/etc/alertmanager/alert_email.sh:ro
+    entrypoint: ["/bin/sh", "/etc/alertmanager/alert_email.sh"]
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://localhost:9093 || exit 1"]
       interval: 30s

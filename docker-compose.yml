@@ -209,14 +209,19 @@ services:
 
 
   prometheus:
-    image: prometheus
-    build:
-      context: ./monitoring/prometheus
-      dockerfile: Dockerfile
+    image: prom/prometheus:v3.2.1
     container_name: prometheus
     restart: unless-stopped
     volumes:
       - prometheus_data:/prometheus/data
+      - ./monitoring/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=10d'
+      - '--web.external-url=https://localhost:80/prometheus/'
+      - '--web.route-prefix=/'
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
       interval: 10s
@@ -227,15 +232,15 @@ services:
       - internal
 
   node-exporter:
-    image: node-exporter
-    build:
-      context: ./monitoring/node-exporter
-      dockerfile: Dockerfile
+    image: prom/node-exporter:v1.9.0
     container_name: node-exporter
     restart: unless-stopped
     depends_on:
       prometheus:
         condition: service_healthy
+    command:
+      - '--no-collector.thermal_zone'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/)'
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://localhost:9100 || exit 1"]
       interval: 30s
@@ -246,7 +251,7 @@ services:
       - internal
 
   alertmanager:
-    image: alertmanager
+    image: prom/alertmanager:v0.28.1
     build:
       context: ./monitoring/alertmanager
       dockerfile: Dockerfile
@@ -257,6 +262,10 @@ services:
      - prometheus
     volumes:
       - alertmanager_data:/data
+      - ./monitoring/alertmanager/tools/alert_email.sh:/etc/alertmanager/alert_email.sh:ro
+    entrypoint: ["/bin/sh", "/etc/alertmanager/alert_email.sh"]
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://localhost:9093 || exit 1"]
       interval: 30s

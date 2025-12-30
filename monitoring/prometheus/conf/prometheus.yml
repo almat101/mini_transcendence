@@ -12,10 +12,7 @@ alerting:
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-  - "rules_1.yml"
-  - "rules_2.yml"
-  - "rules_3.yml"
-  - "rules_4.yml"
+  - "/etc/prometheus/rules/*.yml"
 
 scrape_configs:
   - job_name: "node-exporter"
