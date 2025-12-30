@@ -3,7 +3,7 @@
 cloud "Internet" as internet
 
 
-node "AWS EC2 (Free Tier)" {
+node "Hetzner VPS " {
   node "Docker Engine" {
     RECTANGLE "proxy (NGINX)\n(almat101/proxy:latest)" as proxy
     RECTANGLE "auth-service\n(almat101/auth-service:latest)" as auth

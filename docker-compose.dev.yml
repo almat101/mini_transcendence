@@ -1,7 +1,7 @@
 services:
   proxy:
-    # IMAGE_TAG comes from .env, set by Ansible with the git commit SHA from CD pipeline
-    image: ghcr.io/almat101/proxy:${IMAGE_TAG}
+    image: proxy-dev
+    # image: ghcr.io/almat101/proxy:${IMAGE_TAG}
     build:
       context: ./proxy
       dockerfile: Dockerfile
@@ -27,6 +27,7 @@ services:
     volumes:
       - media:/app/media:rw
       - proxy_logs:/var/log/nginx
+      - ./proxy/frontend:/var/www/html:rw
     healthcheck:
       test: ["CMD-SHELL", "curl -f -k http://localhost:80 || exit 1"]
       interval: 30s
@@ -37,17 +38,22 @@ services:
       - internal
 
   auth-service:
-    image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
+    image: auth-service-dev
+    # image: ghcr.io/almat101/auth-service:${IMAGE_TAG}
     build:
       context: ./backend/auth_service
       dockerfile: Dockerfile
     container_name: auth-service
-    command: sh /app/start.sh
+    command: >
+      sh -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               gunicorn auth_service.wsgi:application --bind 0.0.0.0:8001 --workers=1 --threads=4"
     env_file:
       - .env
     restart: unless-stopped
     volumes:
       - media:/app/media:rw
+      - ./backend/auth_service/django:/app:rw
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1"]
       interval: 10s
@@ -83,7 +89,8 @@ services:
 
 
   tournament-service:
-    image: ghcr.io/almat101/tournament-service:${IMAGE_TAG}
+    image: tournament-service-dev
+    # image: ghcr.io/almat101/tournament-service:${IMAGE_TAG}
     build:
       context: ./backend/tournament-service
       dockerfile: Dockerfile
@@ -95,6 +102,8 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ./backend/tournament-service:/app:rw
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8003/watchman/ || exit 1"]
       interval: 10s
@@ -129,7 +138,8 @@ services:
       - internal
 
   history-service:
-    image: ghcr.io/almat101/history-service:${IMAGE_TAG}
+    image: history-service-dev
+    # image: ghcr.io/almat101/history-service:${IMAGE_TAG}
     build:
       context: ./backend/history
       dockerfile: Dockerfile
@@ -141,6 +151,8 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    volumes:
+      - ./backend/history:/app:rw
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8002/watchman/ || exit 1"]
       interval: 10s
@@ -174,22 +186,25 @@ services:
     networks:
       - internal
   
-  cloudflared:
-    image: cloudflare/cloudflared:2025.11.1
-    container_name: cloudflared
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-    networks:
-      - internal
+  # cloudflared:
+  #   image: cloudflare/cloudflared:2025.11.1
+  #   container_name: cloudflared
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+  #   networks:
+  #     - internal
 
   #monitoring
   grafana:
-    image: grafana/grafana:12.3
+    image: grafana
+    build:
+      context: ./monitoring/grafana
+      dockerfile: Dockerfile
     container_name: grafana
     env_file: ".env"
     restart: unless-stopped
     environment:
-      - GF_SERVER_ROOT_URL=https://localhost:80/grafana/
+      - GF_SERVER_ROOT_URL=https://localhost:8090/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH="true"
     volumes:
       - grafana_data:/var/lib/grafana
@@ -206,7 +221,6 @@ services:
       start_period: 30s
     networks:
       - internal
-
 
   prometheus:
     image: prometheus

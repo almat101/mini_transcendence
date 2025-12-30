@@ -38,4 +38,13 @@ list-all :
 list-all-id :
 	docker ps -a -q
 
-.PHONY: all up down start stop clean fclean re prune ps images exec list-all list-all-id
+dev-up:
+	docker compose -f docker-compose.dev.yml up --build -d
+
+dev-down:
+	docker compose -f docker-compose.dev.yml down
+
+dev-clean:
+	docker compose -f docker-compose.dev.yml down -v
+
+.PHONY: all up down start stop clean fclean re prune ps images exec list-all list-all-id dev-up dev-down dev-clean

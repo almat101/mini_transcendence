@@ -22,7 +22,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
 
-# #### Sostituzione di docker compose build con docker compose pull delle immagini dal dockerhub
+# #### Sostituzione di docker compose build con docker compose pull delle immagini
 
 # - name: Build Docker Compose services
 #   community.docker.docker_compose_v2:
@@ -31,7 +31,7 @@
 #   become: yes
 #   become_user: "{{ app_owner_user }}"
 
-- name: Pull latest Docker images from Docker Hub
+- name: Pull latest Docker images from GitHub Container Registry
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path }}"
     pull: always  # Forza il pull delle immagini più recenti

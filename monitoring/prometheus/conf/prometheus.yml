@@ -34,9 +34,9 @@ scrape_configs:
     static_configs:
       - targets: ["tournament-service:8003"]
 
-  - job_name: 'postgres-exporter-grafana'
-    static_configs:
-      - targets: ["postgres-exporter-grafana:9188"] #also works with 9187 and 9188:9187 as ports in compose
+  # - job_name: 'postgres-exporter-grafana'
+  #   static_configs:
+  #     - targets: ["postgres-exporter-grafana:9188"] #also works with 9187 and 9188:9187 as ports in compose
   
   - job_name: 'postgres-exporter-auth-db'
     static_configs:
