@@ -26,7 +26,7 @@
 - name: Run migrations (BLOCKING)
   community.docker.docker_container:
     name: "{{ item }}_migration_runner"
-    image: "ghcr.io/almat101/{{ item }}:{{ IMAGE_TAG }}
+    image: "ghcr.io/almat101/{{ item }}:{{ image_tag }}"
     command: python manage.py migrate --noinput
     env_file: "{{ app_dest_path }}/.env"
     networks:
