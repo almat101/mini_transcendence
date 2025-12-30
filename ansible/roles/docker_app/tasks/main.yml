@@ -48,7 +48,6 @@
     env_file: "{{ app_dest_path }}/.env"
     networks:
       - name: mini_transcendence_internal
-    network_mode: default
     cleanup: yes
     detach: no
   loop:
