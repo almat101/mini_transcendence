@@ -23,38 +23,28 @@
     IMAGE_TAG: "{{ image_tag }}"
   become_user: "{{ app_owner_user }}"
 
-- name: Start Database services only
+- name: Start Database services
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path }}"
+    services: [auth_db, tournament_db, history_db]
     state: present
-    services:
-      - auth_db
-      - tournament_db
-      - history_db
   environment:
     IMAGE_TAG: "{{ image_tag }}"
-  become: yes
-  become_user: "{{ app_owner_user }}"
 
-- name: Wait for PostgreSQL to be ready
+- name: Wait for DB readiness
   ansible.builtin.pause:
     seconds: 10
 
-- name: Run migrations (BLOCKING)
-  community.docker.docker_container:
-    name: "{{ item }}_migration_runner"
-    image: "ghcr.io/almat101/{{ item }}:{{ image_tag }}"
-    command: python manage.py migrate --noinput
-    env_file: "{{ app_dest_path }}/.env"
-    networks:
-      - name: mini_transcendence_internal
-    cleanup: yes
-    detach: no
+- name: Run migrations
+  ansible.builtin.command:
+    cmd: "docker compose run --rm {{ item }} python manage.py migrate --noinput"
+    chdir: "{{ app_dest_path }}"
+  environment:
+    IMAGE_TAG: "{{ image_tag }}"
   loop:
     - auth-service
     - tournament-service
     - history-service
-  become: yes
 
 - name: Update and restart docker compose services
   community.docker.docker_compose_v2:
