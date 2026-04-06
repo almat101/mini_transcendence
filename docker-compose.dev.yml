@@ -8,7 +8,7 @@ services:
     container_name: proxy
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8090:8090"
     depends_on:
       grafana:
         condition: service_healthy
@@ -26,14 +26,13 @@ services:
         condition: service_healthy
     volumes:
       - media:/app/media:rw
-      - proxy_logs:/var/log/nginx
-      - ./proxy/frontend:/var/www/html:rw
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f -k http://localhost:80 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
+      # - proxy_logs:/var/log/nginx
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f -k http://localhost:8080 || exit 1"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 20s
     networks:
       - mini_transcendence_internal
 

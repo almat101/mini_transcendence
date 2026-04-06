@@ -130,6 +130,7 @@ CORS_ALLOW_CREDENTIALS = True # If you need to send cookies or authentication he
 #ec2 add
 CORS_ALLOWED_ORIGINS = [
     "https://localhost",
+    "http://localhost:8090",
     "https://ec2-51-20-85-225.eu-north-1.compute.amazonaws.com",
     "https://transcendence.alematta.com"
 ]

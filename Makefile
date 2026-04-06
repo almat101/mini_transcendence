@@ -1,3 +1,28 @@
+# =============================
+# Local Development: Migrations
+# =============================
+#
+# IMPORTANT: Before running the app locally, you MUST apply database migrations!
+#
+# Run:
+#     make migrate-dev-run-all
+#
+# This will:
+#   - Create new migration files for any model changes
+#   - Apply all migrations to your local development databases
+#
+# Why is this important?
+#   - If you do NOT run migrations, your Django apps will fail to start or respond with HTTP 500 errors
+#     ("Internal Server Error") because the database schema will not match your models.
+#   - Always run migrations after pulling new code, switching branches, or changing models.
+#
+# Typical workflow:
+#   1. make dev-up
+#   2. make migrate-dev-run-all
+#   3. Access your app at http://localhost:8080
+#
+# If you see 500 errors on API endpoints, check your logs and make sure migrations have been applied!
+
 all : up
 
 up :

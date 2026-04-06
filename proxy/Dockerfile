@@ -1,24 +1,20 @@
-FROM nginx:alpine
+FROM nginx:1.29.6-alpine
 
-#RUN apt-get update
-#RUN apt-get upgrade -y
-#RUN apt-get install -y openssl vim sudo curl net-tools
-RUN apk update && apk add --no-cache curl vim sudo net-tools
+RUN apk update && apk upgrade && apk add --no-cache curl vim sudo net-tools
 
-#RUN mkdir -p /etc/nginx/ssl/
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 
-RUN rm -rf /etc/nginx/conf.d/default.conf
+COPY ./conf.d/gateway.conf /etc/nginx/conf.d/
 
-# Copy Nginx configuration
-COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY frontend /usr/share/nginx/html
 
-# Copy Nginx conf.d
-COPY conf.d/gateway.conf /etc/nginx/conf.d/
+RUN chown -R nginx:nginx /var/log/nginx /var/cache/nginx /run 
 
-# Copy frontend directory into var/www/html of the container
-COPY frontend /var/www/html
+USER nginx
 
-COPY tools/proxy.sh /usr/local/bin/proxy.sh
-RUN chmod +x /usr/local/bin/proxy.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f -s http://localhost:8080/ping || exit 1
 
-CMD ["/usr/local/bin/proxy.sh"]
+EXPOSE 8090
+
+CMD ["nginx", "-g", "daemon off;"]
