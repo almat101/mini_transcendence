@@ -253,7 +253,7 @@ services:
       - mini_transcendence_internal
 
   alertmanager:
-    image: prom/alertmanager:v0.30
+    image: prom/alertmanager:v0.28.1
     container_name: alertmanager
     env_file: ".env"
     restart: unless-stopped
