@@ -49,8 +49,40 @@ jobs:
           echo "JWT_ALGO=HS256" >> .env
           echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
 
-      - name: Build Docker images
-        run: docker compose build
+      - name: Build proxy image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./proxy
+          file: ./proxy/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
+
+      - name: Build auth-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/auth_service
+          file: ./backend/auth_service/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
+
+      - name: Build tournament-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/tournament-service
+          file: ./backend/tournament-service/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
+
+      - name: Build history-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/history
+          file: ./backend/history/Dockerfile
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
+
+      # - name: Build Docker images
+      #   run: docker compose build
 
       - name: Start database and wait for be healthy
         run: docker compose up -d --wait auth_db tournament_db history_db 
@@ -70,37 +102,59 @@ jobs:
       - name: Clean up containers
         run: docker compose down
 
-      - name: Build and push proxy image
-        uses: docker/build-push-action@v5
+      - name: Run Trivy vulnerability scanner (for proxy image)
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          context: ./proxy
-          file: ./proxy/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
-      - name: Build and push auth-service image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/auth_service
-          file: ./backend/auth_service/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
+      - name: Push proxy image to ghcr
+        run: docker push ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
+      
+      - name: Push auth-service image to ghcr
+        run: docker push ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
+      
+      - name: Push tournament-service image to ghcr
+        run: docker push ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
+      
+      - name: Push history-service image to ghcr
+        run: docker push ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
+      
+        # - name: Build and push proxy image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./proxy
+      #     file: ./proxy/Dockerfile
+      #     push: true
+      #     tags: ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
 
-      - name: Build and push tournament-service image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/tournament-service
-          file: ./backend/tournament-service/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
+      # - name: Build and push auth-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/auth_service
+      #     file: ./backend/auth_service/Dockerfile
+      #     push: true
+      #     tags: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
 
-      - name: Build and push history-service image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/history
-          file: ./backend/history/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
+      # - name: Build and push tournament-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/tournament-service
+      #     file: ./backend/tournament-service/Dockerfile
+      #     push: true
+      #     tags: ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}
+
+      # - name: Build and push history-service image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./backend/history
+      #     file: ./backend/history/Dockerfile
+      #     push: true
+      #     tags: ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
 
   cd:
     name: Continuous Deployment
