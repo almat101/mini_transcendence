@@ -10,10 +10,17 @@ WORKDIR /app
 RUN apk update && apk upgrade && apk add --no-cache curl
 COPY requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
+RUN adduser -D appuser
+
+# RUN pip install --upgrade pip -r requirements.txt
+RUN pip install --upgrade pip -r requirements.txt
+# RUN rm -rf /root/.cache/pip
 
 COPY . .
 
-#RUN chmod +x /app/start.sh
+USER appuser
 
 EXPOSE 8002
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -sf http://localhost:8002/watchman/ || exit 1

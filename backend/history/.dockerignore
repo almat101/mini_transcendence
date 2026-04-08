@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.env.*
+.venv
+venv/
+ENV/
+env/
+
+# Django static/media
+staticfiles/
+static/
+media/
+
+# Database
+*.sqlite3
+*.db
+
+# pip cache
+pip-wheel-metadata/
+
+# VSCode
+.vscode/
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Ignore pip cache in image
+root/.cache/pip/
+
+# Misc
+*.swp
+*~
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore secrets
+secrets.*

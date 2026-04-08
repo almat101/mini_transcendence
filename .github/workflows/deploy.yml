@@ -124,6 +124,20 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+      - name: Run Trivy vulnerability scanner (for history image)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # - name: Run trivy image scan for history
+      #   run: |
+      #     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.69.3 image --exit-code 1 --severity CRITICAL,HIGH ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}
+
       # - name: Run trivy image scan (shell method)
       #   run: |
       #     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.69.3 image --exit-code 1 --severity CRITICAL,HIGH ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}
