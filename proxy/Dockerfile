@@ -13,7 +13,7 @@ RUN chown -R nginx:nginx /var/log/nginx /var/cache/nginx /run
 USER nginx
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f -s http://localhost:8080/ping || exit 1
+  CMD curl -f -s http://localhost:8090/ping || exit 1
 
 EXPOSE 8090
 

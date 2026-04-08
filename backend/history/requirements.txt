@@ -1,8 +1,8 @@
-django
-django-rest-framework
-psycopg2-binary
-django-watchman
-django-cors-headers
-django-prometheus
-djangorestframework_simplejwt
-gunicorn
+django>=3.2
+djangorestframework>=3.9.1
+psycopg2-binary>=2.9
+django-watchman>=1.3
+django-cors-headers>=3.5
+django-prometheus>=2.1
+djangorestframework_simplejwt>=4.4
+gunicorn>=20.0
