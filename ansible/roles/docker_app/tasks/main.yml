@@ -50,6 +50,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path }}"
     state: present
+    recreate: always # needs recreate to use the new log rotation: {"max-file":"3","max-size":"10m"}
   environment:
     IMAGE_TAG: "{{ image_tag }}"
   become: yes
