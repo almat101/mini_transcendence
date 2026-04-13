@@ -2,6 +2,7 @@
   - name: Stop and remove docker containers
     hosts: hetzner_instance
     become: yes
+    
     tasks:
       - name: print app_dest_path
         debug:
