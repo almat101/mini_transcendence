@@ -2,7 +2,7 @@
 # Run this playbook to deploy to the current hosts.
 # 
 # Usage:
-#   ansible-playbook playbooks/deploy.yml --ask-vault-pass
+#   ansible-playbook playbooks/deploy.yml --ask-vault-pass -e ansible_port=2323 -e "image_tag=$(git log -1 --format=%H)"
 #
 # - You will be prompted for the Ansible Vault password to decrypt secrets.
 # - The deployment will target the hosts in the [ec2_hosts] group defined in your inventory/hosts.ini file.
