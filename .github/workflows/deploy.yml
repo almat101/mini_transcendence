@@ -224,7 +224,7 @@ jobs:
         run: |
           cd ansible
           source venv/bin/activate
-          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt  -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' -e "image_tag=${{ github.sha }}"
+          ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass.txt -e "ansible_port=${{ secrets.HETZNER_SSH_PORT }} -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' -e "image_tag=${{ github.sha }}"
 
   cleanup:
     name: cleanup
