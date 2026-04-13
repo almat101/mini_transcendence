@@ -1,6 +1,6 @@
 # Audit Tecnico & Hardening - Istanza Hetzner Cloud
 
-Questo documento riassume le attività di manutenzione, ottimizzazione e sicurezza effettuate sull'infrastruttura di test (Debian 12 su Hetzner Cloud).
+Questo documento riassume le attività di manutenzione, ottimizzazione e sicurezza effettuate sull'infrastruttura di test (Debian 13 su Hetzner Cloud).
 
 ## 1. Analisi e Ottimizzazione Storage
 È stata rilevata una saturazione del disco (61%) dovuta all'accumulo di layer Docker e log di sistema.
@@ -55,9 +55,39 @@ Per mitigare la superficie d'attacco, ho agito sulla configurazione del demone S
 ## 3. Automazione & Manutenzione (Ansible)
 Le procedure di manutenzione sono state standardizzate nel workflow di deploy:
 - Task di `docker system prune` inserito come step finale della pipeline.
-- Configurazione del log-driver nel demone Docker per prevenire la crescita incontrollata dei file JSON.
 
-## 4. Skills Stack Dimostrate
+## 4. Docker Daemon & Stabilità Applicativa
+Per prevenire futuri esaurimenti di disco (Disk-Exhaustion), è stata implementata una policy di logging a livello di demone.
+
+### Configurazione `daemon.json`:
+Creato il file `/etc/docker/daemon.json` per limitare la crescita dei file di log JSON dei container:
+- **max-size:** 10m
+- **max-file:** 3
+- **Vantaggio:** Ogni container è limitato a un massimo di 30MB di log rotativi.
+
+
+## 5. CI/CD & Automazione (Ansible & GitHub)
+Il workflow di Continuous Deployment è stato raffinato per integrare le modifiche di sicurezza.
+
+### Gestione Secrets:
+La porta SSH (2323) è stata rimossa dal codice sorgente e iniettata dinamicamente nel playbook Ansible tramite **GitHub Secrets**, garantendo la sicurezza delle credenziali e dei parametri d'accesso.
+
+### Idempotenza e Immutabilità:
+- **Problema:** I container esistenti non ereditano automaticamente le nuove regole sui log definite nel demone.
+- **Soluzione:** Aggiornamento del modulo `community.docker.docker_compose_v2` con il parametro `recreate: always`.
+- **Logica DevOps:** Sfruttato il concetto di immutabilità del container per forzare un re-deploy e assicurare l'allineamento di tutti i microservizi ai nuovi standard di storage.
+
+
+## 5. Glossario
+Termini chiave utilizzati:
+
+- **Idempotenza:** Capacità di Ansible di eseguire un'azione solo se necessario (stato desiderato).
+- **Hardening:** Rafforzamento della sicurezza tramite restrizione dei parametri (SSH, Firewall).
+- **Inbound/Outbound Rules:** Gestione del traffico di rete perimetrale.
+- **Dangling Images:** Layer Docker orfani e inutilizzati.
+- **Log Rotation:** Gestione ciclica dei file di log per prevenire l'overflow del disco.
+
+## 6. Skills Stack Dimostrate
 - **Linux Admin:** Gestione Systemd (journald), troubleshooting avanzato del filesystem.
 - **Networking & Security:** Cloud Firewalls, Hardening di OpenSSH, gestione Inbound traffic.
 - **Docker:** Lifecycle management (images, layers, volumes).
