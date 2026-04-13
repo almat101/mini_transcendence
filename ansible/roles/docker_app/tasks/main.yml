@@ -61,6 +61,15 @@
     var: docker_compose_result
     # msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
 
+# Clean up unused Docker resources after deployment (safe prune)
+- name: Prune unused Docker resources
+  community.docker.docker_prune:
+    containers: true
+    images: true
+    networks: true
+    volumes: true
+    builder_cache: true
+
 # - name: Stop and remove existing Docker Compose services if running
 #   community.docker.docker_compose_v2:
 #     project_src: "{{ app_dest_path }}"
