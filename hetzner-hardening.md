@@ -38,6 +38,8 @@ root@debian-4gb-nbg1-1:~# sudo du -sh /var/log/journal
 L'analisi dei log ha evidenziato un'attività critica di brute-force sulla porta standard.
 
 ### Diagnostica Attacchi (Journalctl):
+
+
 ```txt
 Apr 13 00:00:03 sshd-session[3170010]: Failed password for root from 45.148.10.152 port 28796 ssh2
 Apr 13 00:00:35 sshd-session[3170811]: Invalid user solana from 92.118.39.62 port 48284
@@ -51,6 +53,26 @@ Per mitigare la superficie d'attacco, ho agito sulla configurazione del demone S
 - **Identity Enforcement:** Disabilitata l'autenticazione via password (`PasswordAuthentication no`).
 - **SSH Keys:** Accesso consentito esclusivamente tramite chiavi asimmetriche (ED25519).
 - **Network Layer (Cloud Firewall):** Similmente alla gestione dei **Security Groups su AWS**, ho aggiornato le **Inbound Rules** per permettere il traffico TCP sulla porta **2323** dal Public Internet, rimuovendo contestualmente la porta 22 per eliminare il rumore dei bot.
+
+### Verifica Log Post-Hardening (14 Aprile):
+L'analisi dei log tramite journalctl conferma l'efficacia delle misure adottate:
+
+- I tentativi di connessione da IP non autorizzati (es. 193.32.162.28) **falliscono** nella fase di banner exchange, impedendo qualsiasi tentativo di brute-force.
+
+```txt
+Apr 14 03:18:03 debian-4gb-nbg1-1 sshd-session[930078]: error: kex_exchange_identification: read: Connection reset by peer
+Apr 14 03:18:03 debian-4gb-nbg1-1 sshd-session[930078]: Connection reset by 193.32.162.28 port 33350
+Apr 14 03:18:03 debian-4gb-nbg1-1 sshd-session[930079]: banner exchange: Connection from 193.32.162.28 port 33380: invalid format
+Apr 14 03:18:04 debian-4gb-nbg1-1 sshd-session[930117]: banner exchange: Connection from 193.32.162.28 port 33418: invalid format
+```
+
+>La differenza tra i due errori nel log:
+>kex_exchange_identification: Il bot ha chiuso la connessione subito (Reset). È un "mordi e fuggi".
+>banner exchange: invalid format: Il bot è rimasto connesso un secondo in più e ha provato a inviare dati "spazzatura" (magari cercando di capire se fosse un database o un server web). Il server ha letto quei dati, ha visto che non erano in formato SSH e ha dato l'errore di formato.
+
+- L'accesso legittimo avviene esclusivamente tramite **chiave ED25519**, garantendo un livello di sicurezza superiore allo standard.
+
+- Le routine di manutenzione (logrotate, apt-daily) procedono senza errori, confermando la stabilità del sistema dopo la pulizia del disco.
 
 ## 3. Automazione & Manutenzione (Ansible)
 Le procedure di manutenzione sono state standardizzate nel workflow di deploy:
