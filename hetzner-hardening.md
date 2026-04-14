@@ -87,7 +87,6 @@ Creato il file `/etc/docker/daemon.json` per limitare la crescita dei file di lo
 - **max-file:** 3
 - **Vantaggio:** Ogni container è limitato a un massimo di 30MB di log rotativi.
 
-
 ## 5. CI/CD & Automazione (Ansible & GitHub)
 Il workflow di Continuous Deployment è stato raffinato per integrare le modifiche di sicurezza.
 
@@ -98,7 +97,6 @@ La porta SSH (2323) è stata rimossa dal codice sorgente e iniettata dinamicamen
 - **Problema:** I container esistenti non ereditano automaticamente le nuove regole sui log definite nel demone.
 - **Soluzione:** Aggiornamento del modulo `community.docker.docker_compose_v2` con il parametro `recreate: always`.
 - **Logica DevOps:** Sfruttato il concetto di immutabilità del container per forzare un re-deploy e assicurare l'allineamento di tutti i microservizi ai nuovi standard di storage.
-
 
 ## 5. Glossario
 Termini chiave utilizzati:
