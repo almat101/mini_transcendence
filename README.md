@@ -60,19 +60,29 @@ The platform includes a comprehensive monitoring solution:
 The project uses a modern CI/CD pipeline managed via [GitHub Actions](.github/workflows/deploy.yml):
 
 ### Continuous Integration (CI)
-- **Trigger:** On every push to the `main` branch
+- **Trigger:** On every push to the `main` branch (markdown-only changes are ignored!!!)
 - **Steps:**
   - Checkout code
-  - Generate dummy `.env` file for CI environment
-  - Build all Docker images.
-  - Run integration tests ( only backend auth-service)
-  - Clean up containers.
   - Login to **GitHub Container Registry (GHCR)** using `GITHUB_TOKEN`
+  - Generate dummy `.env` file for CI environment
+  - Build Docker images manually for:
+    - `ghcr.io/<owner>/proxy:<sha>`
+    - `ghcr.io/<owner>/auth-service:<sha>`
+    - `ghcr.io/<owner>/tournament-service:<sha>`
+    - `ghcr.io/<owner>/history-service:<sha>`
+  - Start PostgreSQL containers (`auth_db`, `tournament_db`, `history_db`) and wait until healthy
+  - Check missing migrations for all Django services (`auth-service`, `tournament-service`, `history-service`)
+  - Run integration tests (backend `auth-service`, app `auth_app`)
+  - Clean up containers
+  - Run Trivy vulnerability scans on:
+    - `proxy` image
+    - `history-service` image
+    - Fail CI on `CRITICAL` or `HIGH` findings
   - Build and push Docker images to `ghcr.io` with commit SHA tags:
-    - `ghcr.io/almat101/proxy:<sha>`
-    - `ghcr.io/almat101/auth-service:<sha>`
-    - `ghcr.io/almat101/tournament-service:<sha>`
-    - `ghcr.io/almat101/history-service:<sha>`
+    - `ghcr.io/<owner>/proxy:<sha>`
+    - `ghcr.io/<owner>/auth-service:<sha>`
+    - `ghcr.io/<owner>/tournament-service:<sha>`
+    - `ghcr.io/<owner>/history-service:<sha>`
 
 ### Continuous Deployment (CD)
 - **Trigger:** After successful CI completion
@@ -91,8 +101,8 @@ The project uses a modern CI/CD pipeline managed via [GitHub Actions](.github/wo
 - **Steps:**
   - Cleans up old versions of each container image (`proxy`, `auth-service`, `tournament-service`, `history-service`)
   - **Keeps the 5 most recent versions** of each image
-  - Deletes both tagged and untagged versions to save storage
-  - Uses a Personal Access Token (PAT) for package management permissions
+  - Deletes both tagged and untagged versions to save storage (`delete-only-untagged-versions: false`)
+  - Uses a Personal Access Token (PAT) for package management permissions (`packages:write` scope)
 
 You can find the workflow definition in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
