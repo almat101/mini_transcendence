@@ -11,13 +11,27 @@ RUN apk update && apk upgrade && apk add --no-cache curl
 
 COPY requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
+RUN adduser -D appuser
+
+## solved CVE-2026-3219 upgrating pip
+RUN pip install --upgrade pip -r requirements.txt
+
+# COPY django/ .
+
+COPY . .
+
+RUN chown -R appuser:appuser /app
+
+# COPY start.sh /app/start.sh
+# RUN chmod +x /app/start.sh
+# migration ran on CI or with makefile
+
+USER appuser
 
 EXPOSE 8001
 
-COPY django/ .
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1
 
 # RUN echo '#!/bin/sh\n\
 # python manage.py crontab remove\n\

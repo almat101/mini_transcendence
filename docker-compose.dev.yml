@@ -50,12 +50,12 @@ services:
     volumes:
       - media:/app/media:rw
       - ./backend/auth_service/django:/app:rw
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -sf http://localhost:8001/watchman/?skip=watchman.checks.storage || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
     depends_on:
       auth_db:
         condition: service_healthy
@@ -97,12 +97,12 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/tournament-service:/app:rw
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8003/watchman/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -sf http://localhost:8003/watchman/ || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
     depends_on:
       tournament_db:
         condition: service_healthy
