@@ -21,22 +21,24 @@ jobs:
 
     steps:
       - name: Run Trivy config scan for backend Dockerfiles
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
           scan-ref: ./backend
           format: table
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       - name: Run Trivy config scan for proxy (nginx) Dockerfile
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
           scan-ref: ./proxy
           format: table
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       - name: Checkout code
         uses: actions/checkout@v5
@@ -135,7 +137,7 @@ jobs:
         run: docker compose down
 
       - name: Run Trivy vulnerability scanner (for proxy image)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/proxy:${{ github.sha }}'
           format: 'table'
@@ -143,9 +145,10 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       - name: Run Trivy vulnerability scanner (for history image)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/history-service:${{ github.sha }}'
           format: 'table'
@@ -153,9 +156,10 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       - name: Run Trivy vulnerability scanner (for tournament image)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/tournament-service:${{ github.sha }}'
           format: 'table'
@@ -163,9 +167,10 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       - name: Run Trivy vulnerability scanner (for auth image)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}'
           format: 'table'
@@ -173,6 +178,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          version: v0.70.0
 
       # - name: Run trivy image scan for history
       #   run: |
