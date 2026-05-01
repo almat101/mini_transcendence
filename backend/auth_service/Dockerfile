@@ -16,9 +16,7 @@ RUN adduser -D appuser
 ## solved CVE-2026-3219 upgrating pip
 RUN pip install --upgrade pip -r requirements.txt
 
-# COPY django/ .
-
-COPY . .
+COPY django/ .
 
 RUN chown -R appuser:appuser /app
 
