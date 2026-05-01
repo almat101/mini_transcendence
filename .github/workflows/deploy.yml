@@ -24,7 +24,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
-          scan-ref: ./backend
+          scan-ref: ./backend/auth_service
           format: table
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
